@@ -2,24 +2,13 @@ use glam::DMat3;
 use glam::DQuat;
 use glam::DVec3;
 
-pub struct State {
-    position: DVec3,
-    velocity: DVec3,
-    quaternion: DQuat,
-    angular_velocity: DVec3,
-}
-
-pub struct Body {
-    id: u32,
-    mass: f64,
-    inertia: DMat3,
-    state: State,
-}
+use crate::system::body::Body;
+use crate::system::body::State;
 
 pub struct World {
-    bodies: Vec<Body>,
-    enable_gravity: bool,
-    gravity: f64,
+    pub bodies: Vec<Body>,
+    pub enable_gravity: bool,
+    pub gravity: f64,
     next_id: u32,
 }
 
