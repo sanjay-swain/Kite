@@ -17,6 +17,8 @@ impl World {
             mass: mass,
             inertia: inertia,
             state: initial_state,
+            forces: vec![],
+            torques: vec![],
         });
         self.next_id += 1;
     }
