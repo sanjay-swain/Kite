@@ -13,3 +13,9 @@ pub struct Body {
     pub forces: Vec<Force>,
     pub torques: Vec<Torque>,
 }
+
+impl Body {
+    pub fn apply_force(&mut self, force: Force) {
+        self.forces.push(force);
+    }
+}
