@@ -1,11 +1,11 @@
 use glam::DMat3;
 
-use crate::system::{body::Body, state::State};
+use crate::system::{body::Body, interactions::Force, state::State};
 
 pub struct World {
     pub bodies: Vec<Body>,
     pub enable_gravity: bool,
-    pub gravity: f64,
+    pub gravity: Force,
     next_id: u32,
 }
 
@@ -20,5 +20,11 @@ impl World {
             torques: vec![],
         });
         self.next_id += 1;
+    }
+
+    pub fn apply_gravity(&mut self) {
+        for body in &mut self.bodies {
+            body.apply_force(self.gravity);
+        }
     }
 }
