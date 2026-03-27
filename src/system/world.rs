@@ -1,6 +1,4 @@
 use glam::DMat3;
-use glam::DQuat;
-use glam::DVec3;
 
 use crate::system::body::Body;
 use crate::system::body::State;
@@ -13,17 +11,12 @@ pub struct World {
 }
 
 impl World {
-    pub fn create_body(&mut self, mass: f64, inertia: DMat3) {
+    pub fn create_body(&mut self, mass: f64, inertia: DMat3, initial_state: State) {
         self.bodies.push(Body {
             id: self.next_id,
             mass: mass,
             inertia: inertia,
-            state: State {
-                position: DVec3::ZERO,
-                velocity: DVec3::ZERO,
-                quaternion: DQuat::IDENTITY,
-                angular_velocity: DVec3::ZERO,
-            },
+            state: initial_state,
         });
         self.next_id += 1;
     }
