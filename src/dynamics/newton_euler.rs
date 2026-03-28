@@ -23,3 +23,99 @@ pub fn newton_euler(body: &Body) -> StateDerivative {
 
     x_dot
 }
+
+#[cfg(test)]
+mod tests {
+    use glam::{DMat3, DVec3};
+
+    use crate::system::{
+        interactions::{Force, Frame, Torque},
+        state::State,
+    };
+
+    use super::*;
+
+    #[test]
+    fn translation() {
+        let mut body: Body = Body {
+            id: 0,
+            mass: 5.0,
+            inertia: DMat3::IDENTITY,
+            state: State::ZERO,
+            forces: vec![],
+            torques: vec![],
+        };
+
+        body.apply_force(Force::new(
+            DVec3::new(50.0, 0.0, 0.0),
+            DVec3::ZERO,
+            Frame::Local,
+        ));
+
+        let res = newton_euler(&body);
+
+        assert!((res.acceleration.x - 10.0).abs() < 1e-6);
+        assert!((res.acceleration.y).abs() < 1e-6);
+        assert!((res.acceleration.z).abs() < 1e-6);
+
+        assert!((res.angular_acceleration.x).abs() < 1e-6);
+        assert!((res.angular_acceleration.y).abs() < 1e-6);
+        assert!((res.angular_acceleration.z).abs() < 1e-6);
+    }
+
+    #[test]
+    fn rotation() {
+        let mut body: Body = Body {
+            id: 0,
+            mass: 1.0,
+            inertia: DMat3::from_diagonal(DVec3 {
+                x: 10.0,
+                y: 20.0,
+                z: 30.0,
+            }),
+            state: State::ZERO,
+            forces: vec![],
+            torques: vec![],
+        };
+
+        body.apply_torque(Torque::new(DVec3::new(0.0, 20.0, 0.0), Frame::Local));
+
+        let res = newton_euler(&body);
+
+        assert!((res.acceleration.x).abs() < 1e-6);
+        assert!((res.acceleration.y).abs() < 1e-6);
+        assert!((res.acceleration.z).abs() < 1e-6);
+
+        assert!((res.angular_acceleration.x).abs() < 1e-6);
+        assert!((res.angular_acceleration.y - 1.0).abs() < 1e-6);
+        assert!((res.angular_acceleration.z).abs() < 1e-6);
+    }
+
+    #[test]
+    fn gyroscope() {
+        let mut body: Body = Body {
+            id: 0,
+            mass: 1.0,
+            inertia: DMat3::from_diagonal(DVec3 {
+                x: 10.0,
+                y: 20.0,
+                z: 30.0,
+            }),
+            state: State::ZERO,
+            forces: vec![],
+            torques: vec![],
+        };
+
+        body.state.angular_velocity = DVec3 {
+            x: 1.0,
+            y: 0.0,
+            z: 1.0,
+        };
+
+        let res = newton_euler(&body);
+
+        assert!((res.angular_acceleration.x).abs() < 1e-6);
+        assert!((res.angular_acceleration.y - 1.0).abs() < 1e-6);
+        assert!((res.angular_acceleration.z).abs() < 1e-6);
+    }
+}
