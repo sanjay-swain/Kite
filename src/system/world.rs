@@ -1,4 +1,4 @@
-use glam::DMat3;
+use glam::{DMat3, DVec3};
 
 use crate::system::{body::Body, interactions::Force, state::State};
 
@@ -22,9 +22,24 @@ impl World {
         self.next_id += 1;
     }
 
-    pub fn apply_gravity(&mut self) {
+    pub fn apply_gravity_force(&mut self) {
         for body in &mut self.bodies {
             body.apply_force(self.gravity);
+        }
+    }
+}
+
+impl Default for World {
+    fn default() -> Self {
+        Self {
+            bodies: vec![],
+            enable_gravity: true,
+            gravity: Force::new(
+                DVec3::new(0.0, 0.0, -9.81),
+                DVec3::ZERO,
+                crate::system::interactions::Frame::Global,
+            ),
+            next_id: 0,
         }
     }
 }
