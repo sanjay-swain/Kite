@@ -33,3 +33,12 @@ pub struct Torque {
     pub torque: DVec3,
     pub frame: Frame,
 }
+
+impl Torque {
+    pub fn new(torque: DVec3, frame: Frame) -> Self {
+        Self {
+            torque: torque,
+            frame: frame,
+        }
+    }
+}

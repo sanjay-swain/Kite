@@ -3,10 +3,11 @@ use crate::{
     system::{body::Body, state::StateDerivative},
 };
 
-pub fn newton_euler(body: &Body, time: &f64) -> StateDerivative {
+pub fn newton_euler(body: &Body) -> StateDerivative {
     // First we need to calculate the Resultant Forces and Torques.
     let resultant_force = compute_forces(body);
     let resultant_torque = compute_torqes(body);
+
     let x_dot = StateDerivative {
         velocity: body.state.velocity,
         acceleration: resultant_force.force / body.mass,
