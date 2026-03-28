@@ -93,3 +93,57 @@ impl Torque {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::f64::consts::PI;
+
+    use super::*;
+
+    #[test]
+    fn identity() {
+        let f = Force::new(DVec3::new(10.0, 20.0, 30.0), DVec3::ZERO, Frame::Local);
+        let tau = Torque::new(DVec3::new(10.0, 20.0, 30.0), Frame::Local);
+
+        let orientation = DQuat::IDENTITY;
+        assert!((f.to_global(orientation).x - f.force.x) < 1e-6);
+        assert!((f.to_global(orientation).y - f.force.y) < 1e-6);
+        assert!((f.to_global(orientation).z - f.force.z) < 1e-6);
+
+        assert!((tau.to_global(orientation).x - tau.torque.x).abs() < 1e-6);
+        assert!((tau.to_global(orientation).y - tau.torque.y).abs() < 1e-6);
+        assert!((tau.to_global(orientation).z - tau.torque.z).abs() < 1e-6);
+    }
+
+    #[test]
+    fn local_to_global() {
+        let f = Force::new(DVec3::new(10.0, 20.0, 30.0), DVec3::ZERO, Frame::Local);
+        let tau = Torque::new(DVec3::new(10.0, 20.0, 30.0), Frame::Local);
+
+        let orientation = DQuat::from_axis_angle(DVec3::X, PI / 2.0);
+
+        assert!((f.to_global(orientation).x - 10.0).abs() < 1e-6);
+        assert!((f.to_global(orientation).y + 30.0).abs() < 1e-6);
+        assert!((f.to_global(orientation).z - 20.0).abs() < 1e-6);
+
+        assert!((tau.to_global(orientation).x - 10.0).abs() < 1e-6);
+        assert!((tau.to_global(orientation).y + 30.0).abs() < 1e-6);
+        assert!((tau.to_global(orientation).z - 20.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn global_to_local() {
+        let f = Force::new(DVec3::new(10.0, -30.0, 20.0), DVec3::ZERO, Frame::Global);
+        let tau = Torque::new(DVec3::new(10.0, -30.0, 20.0), Frame::Global);
+
+        let orientation = DQuat::from_axis_angle(DVec3::X, PI / 2.0);
+
+        assert!((f.to_local(orientation).x - 10.0).abs() < 1e-6);
+        assert!((f.to_local(orientation).y - 20.0).abs() < 1e-6);
+        assert!((f.to_local(orientation).z - 30.0).abs() < 1e-6);
+
+        assert!((tau.to_local(orientation).x - 10.0).abs() < 1e-6);
+        assert!((tau.to_local(orientation).y - 20.0).abs() < 1e-6);
+        assert!((tau.to_local(orientation).z - 30.0).abs() < 1e-6);
+    }
+}
