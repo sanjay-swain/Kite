@@ -18,4 +18,7 @@ impl Body {
     pub fn apply_force(&mut self, force: Force) {
         self.forces.push(force);
     }
+    pub fn apply_torque(&mut self, torque: Torque) {
+        self.torques.push(torque);
+    }
 }
