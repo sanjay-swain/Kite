@@ -10,6 +10,7 @@ pub struct World {
     pub bodies: Vec<Body>,
     pub enable_gravity: bool,
     pub gravity: Force,
+    pub step_size: f64,
     next_id: u32,
 }
 
@@ -39,6 +40,7 @@ impl Default for World {
             bodies: vec![],
             enable_gravity: true,
             gravity: Force::new(DVec3::new(0.0, 0.0, -9.81), DVec3::ZERO, Frame::Global),
+            step_size: 1e-5,
             next_id: 0,
         }
     }
