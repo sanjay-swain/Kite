@@ -7,6 +7,15 @@ pub struct State {
     pub angular_velocity: DVec3,
 }
 
+impl State {
+    pub const ZERO: Self = Self {
+        position: DVec3::ZERO,
+        velocity: DVec3::ZERO,
+        orientation: DQuat::IDENTITY,
+        angular_velocity: DVec3::ZERO,
+    };
+}
+
 pub struct StateDerivative {
     pub velocity: DVec3,
     pub acceleration: DVec3,
