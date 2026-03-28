@@ -1,6 +1,10 @@
 use glam::{DMat3, DVec3};
 
-use crate::system::{body::Body, interactions::Force, state::State};
+use crate::system::{
+    body::Body,
+    interactions::{Force, Frame},
+    state::State,
+};
 
 pub struct World {
     pub bodies: Vec<Body>,
@@ -34,11 +38,7 @@ impl Default for World {
         Self {
             bodies: vec![],
             enable_gravity: true,
-            gravity: Force::new(
-                DVec3::new(0.0, 0.0, -9.81),
-                DVec3::ZERO,
-                crate::system::interactions::Frame::Global,
-            ),
+            gravity: Force::new(DVec3::new(0.0, 0.0, -9.81), DVec3::ZERO, Frame::Global),
             next_id: 0,
         }
     }
