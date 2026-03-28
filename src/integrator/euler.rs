@@ -2,7 +2,7 @@ use glam::DQuat;
 
 use crate::system::{state::StateDerivative, world::World};
 
-pub fn explict_euler_step(world: &mut World, state_derivative: StateDerivative) {
+pub fn explicit_euler_step(world: &mut World, state_derivative: StateDerivative) {
     for body in &mut world.bodies {
         body.state.position += state_derivative.velocity * world.step_size;
         body.state.velocity += state_derivative.acceleration * world.step_size;
@@ -21,7 +21,7 @@ pub fn explict_euler_step(world: &mut World, state_derivative: StateDerivative) 
     }
 }
 
-pub fn semi_implict_euler_step(world: &mut World, state_derivative: StateDerivative) {
+pub fn semi_implicit_euler_step(world: &mut World, state_derivative: StateDerivative) {
     for body in &mut world.bodies {
         body.state.velocity += state_derivative.acceleration * world.step_size;
         body.state.position += body.state.velocity * world.step_size;
