@@ -2,7 +2,7 @@ use glam::DMat3;
 
 use crate::system::{
     interactions::{Force, Torque},
-    state::State,
+    state::{State, StateDerivative},
 };
 
 pub struct Body {
@@ -10,6 +10,7 @@ pub struct Body {
     pub mass: f64,
     pub inertia: DMat3,
     pub state: State,
+    pub state_derivative: StateDerivative,
     pub forces: Vec<Force>,
     pub torques: Vec<Torque>,
 }

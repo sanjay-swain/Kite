@@ -3,7 +3,7 @@ use glam::{DMat3, DVec3};
 use crate::system::{
     body::Body,
     interactions::{Force, Frame},
-    state::State,
+    state::{State, StateDerivative},
 };
 
 pub struct World {
@@ -21,6 +21,7 @@ impl World {
             mass: mass,
             inertia: inertia,
             state: initial_state,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         });

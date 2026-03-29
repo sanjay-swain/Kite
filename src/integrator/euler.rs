@@ -1,11 +1,11 @@
 use glam::DQuat;
 
-use crate::system::{state::StateDerivative, world::World};
+use crate::system::world::World;
 
-pub fn explicit_euler_step(world: &mut World, state_derivative: StateDerivative) {
+pub fn explicit_euler_step(world: &mut World) {
     for body in &mut world.bodies {
-        body.state.position += state_derivative.velocity * world.step_size;
-        body.state.velocity += state_derivative.acceleration * world.step_size;
+        body.state.position += body.state_derivative.velocity * world.step_size;
+        body.state.velocity += body.state_derivative.acceleration * world.step_size;
 
         let q = body.state.orientation;
         let w = body.state.angular_velocity;
@@ -17,16 +17,16 @@ pub fn explicit_euler_step(world: &mut World, state_derivative: StateDerivative)
         );
 
         body.state.orientation = (q + dq_dt * world.step_size).normalize();
-        body.state.angular_velocity += state_derivative.angular_acceleration * world.step_size;
+        body.state.angular_velocity += body.state_derivative.angular_acceleration * world.step_size;
     }
 }
 
-pub fn semi_implicit_euler_step(world: &mut World, state_derivative: StateDerivative) {
+pub fn semi_implicit_euler_step(world: &mut World) {
     for body in &mut world.bodies {
-        body.state.velocity += state_derivative.acceleration * world.step_size;
+        body.state.velocity += body.state_derivative.acceleration * world.step_size;
         body.state.position += body.state.velocity * world.step_size;
 
-        body.state.angular_velocity += state_derivative.angular_acceleration * world.step_size;
+        body.state.angular_velocity += body.state_derivative.angular_acceleration * world.step_size;
 
         let angle = body.state.angular_velocity.length() * world.step_size;
         if angle > 1e-6 {
