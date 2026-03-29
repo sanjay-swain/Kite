@@ -3,11 +3,11 @@ use crate::{
     system::{body::Body, state::StateDerivative},
 };
 
-pub fn newton_euler(body: &Body) -> StateDerivative {
+pub fn newton_euler(body: &mut Body) {
     // First we need to calculate the Resultant Forces and Torques.
     let (resultant_force, resultant_torque) = compute_resultant(body);
 
-    let x_dot = StateDerivative {
+    body.state_derivative = StateDerivative {
         velocity: body.state.velocity,
         // The resultant force we get after computation is in local frame,
         // we need to convert it into global frame of reference
@@ -20,8 +20,6 @@ pub fn newton_euler(body: &Body) -> StateDerivative {
                     .angular_velocity
                     .cross(body.inertia * body.state.angular_velocity)),
     };
-
-    x_dot
 }
 
 #[cfg(test)]
@@ -42,6 +40,7 @@ mod tests {
             mass: 5.0,
             inertia: DMat3::IDENTITY,
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
@@ -52,15 +51,15 @@ mod tests {
             Frame::Local,
         ));
 
-        let res = newton_euler(&body);
+        newton_euler(&mut body);
 
-        assert!((res.acceleration.x - 10.0).abs() < 1e-6);
-        assert!((res.acceleration.y).abs() < 1e-6);
-        assert!((res.acceleration.z).abs() < 1e-6);
+        assert!((body.state_derivative.acceleration.x - 10.0).abs() < 1e-6);
+        assert!((body.state_derivative.acceleration.y).abs() < 1e-6);
+        assert!((body.state_derivative.acceleration.z).abs() < 1e-6);
 
-        assert!((res.angular_acceleration.x).abs() < 1e-6);
-        assert!((res.angular_acceleration.y).abs() < 1e-6);
-        assert!((res.angular_acceleration.z).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.x).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.y).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.z).abs() < 1e-6);
     }
 
     #[test]
@@ -74,21 +73,22 @@ mod tests {
                 z: 30.0,
             }),
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
 
         body.apply_torque(Torque::new(DVec3::new(0.0, 20.0, 0.0), Frame::Local));
 
-        let res = newton_euler(&body);
+        newton_euler(&mut body);
 
-        assert!((res.acceleration.x).abs() < 1e-6);
-        assert!((res.acceleration.y).abs() < 1e-6);
-        assert!((res.acceleration.z).abs() < 1e-6);
+        assert!((body.state_derivative.acceleration.x).abs() < 1e-6);
+        assert!((body.state_derivative.acceleration.y).abs() < 1e-6);
+        assert!((body.state_derivative.acceleration.z).abs() < 1e-6);
 
-        assert!((res.angular_acceleration.x).abs() < 1e-6);
-        assert!((res.angular_acceleration.y - 1.0).abs() < 1e-6);
-        assert!((res.angular_acceleration.z).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.x).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.y - 1.0).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.z).abs() < 1e-6);
     }
 
     #[test]
@@ -102,6 +102,7 @@ mod tests {
                 z: 30.0,
             }),
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
@@ -112,10 +113,10 @@ mod tests {
             z: 1.0,
         };
 
-        let res = newton_euler(&body);
+        newton_euler(&mut body);
 
-        assert!((res.angular_acceleration.x).abs() < 1e-6);
-        assert!((res.angular_acceleration.y - 1.0).abs() < 1e-6);
-        assert!((res.angular_acceleration.z).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.x).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.y - 1.0).abs() < 1e-6);
+        assert!((body.state_derivative.angular_acceleration.z).abs() < 1e-6);
     }
 }

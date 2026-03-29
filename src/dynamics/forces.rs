@@ -30,7 +30,10 @@ mod tests {
 
     use glam::{DMat3, DQuat};
 
-    use crate::system::{interactions::Frame, state::State};
+    use crate::system::{
+        interactions::Frame,
+        state::{State, StateDerivative},
+    };
 
     use super::*;
 
@@ -41,6 +44,7 @@ mod tests {
             mass: 2.0,
             inertia: DMat3::IDENTITY,
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
@@ -83,6 +87,7 @@ mod tests {
             mass: 2.0,
             inertia: DMat3::IDENTITY,
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
@@ -132,6 +137,7 @@ mod tests {
             mass: 2.0,
             inertia: DMat3::IDENTITY,
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
@@ -169,6 +175,7 @@ mod tests {
             mass: 2.0,
             inertia: DMat3::IDENTITY,
             state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
         };
