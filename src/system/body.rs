@@ -21,4 +21,11 @@ impl Body {
     pub fn apply_torque(&mut self, torque: Torque) {
         self.torques.push(torque);
     }
+
+    pub fn clear_forces(&mut self) {
+        self.forces = vec![];
+    }
+    pub fn clear_torques(&mut self) {
+        self.torques = vec![];
+    }
 }

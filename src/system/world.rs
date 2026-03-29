@@ -28,8 +28,17 @@ impl World {
     }
 
     pub fn apply_gravity_force(&mut self) {
+        if self.enable_gravity {
+            for body in &mut self.bodies {
+                body.apply_force(self.gravity);
+            }
+        }
+    }
+
+    pub fn clear_forces_and_torques(&mut self) {
         for body in &mut self.bodies {
-            body.apply_force(self.gravity);
+            body.clear_forces();
+            body.clear_torques();
         }
     }
 }
