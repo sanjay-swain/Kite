@@ -9,6 +9,8 @@ pub enum Frame {
     Local,
 }
 
+/// This struct holds information of the force acting on a body.
+/// Unit: Newton(N)
 #[derive(Clone, Copy)]
 pub struct Force {
     pub force: DVec3,
@@ -32,6 +34,7 @@ impl Force {
         frame: Frame::Global,
     };
 
+    /// Create a new force
     pub fn new(force: DVec3, position: DVec3, frame: Frame) -> Self {
         Self {
             force: force,
@@ -40,6 +43,8 @@ impl Force {
         }
     }
 
+    /// Return the force vector in global frame
+    /// If the force is already in global frame it will return the same vector
     pub fn to_global(&self, orientation: DQuat) -> DVec3 {
         return match self.frame {
             Frame::Global => self.force,
@@ -47,6 +52,8 @@ impl Force {
         };
     }
 
+    /// Return the force vector in local frame
+    /// If the force is already in local frame it will return the same vector
     pub fn to_local(&self, orientation: DQuat) -> DVec3 {
         return match self.frame {
             Frame::Global => orientation.inverse() * self.force,
@@ -55,9 +62,13 @@ impl Force {
     }
 }
 
+/// The struct holds information of pure torque applied on a body
+/// Unit: Newton-meter (Nm)
 #[derive(Clone, Copy)]
 pub struct Torque {
+    /// The torque applied in Nm
     pub torque: DVec3,
+    /// Frame of reference about which the torque is being applied
     pub frame: Frame,
 }
 
@@ -72,6 +83,7 @@ impl Torque {
         frame: Frame::Global,
     };
 
+    /// Creates a new Torque
     pub fn new(torque: DVec3, frame: Frame) -> Self {
         Self {
             torque: torque,
@@ -79,6 +91,8 @@ impl Torque {
         }
     }
 
+    /// Return the torque vector in global frame of reference
+    /// If the torque is already in global frame of reference then return the same.
     pub fn to_global(&self, orientation: DQuat) -> DVec3 {
         match self.frame {
             Frame::Global => self.torque,
@@ -86,6 +100,8 @@ impl Torque {
         }
     }
 
+    /// Return the torque vector in local frame of reference
+    /// If the torque is already in local frame of reference then return the same
     pub fn to_local(&self, orientation: DQuat) -> DVec3 {
         match self.frame {
             Frame::Global => orientation.inverse() * self.torque,
