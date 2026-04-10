@@ -11,7 +11,7 @@ pub struct World {
     pub enable_gravity: bool,
     pub gravity: Force,
     pub step_size: f64,
-    next_id: u32,
+    next_id: usize,
 }
 
 impl World {

@@ -6,7 +6,7 @@ use crate::system::{
 };
 
 pub struct Body {
-    pub id: u32,
+    pub id: usize,
     pub mass: f64,
     pub inertia: DMat3,
     pub state: State,
