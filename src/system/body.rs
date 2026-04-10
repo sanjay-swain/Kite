@@ -8,11 +8,14 @@ use crate::system::{
 pub struct Body {
     pub id: usize,
     pub mass: f64,
+    pub mass_inv: f64,
     pub inertia: DMat3,
+    pub inertia_inv: DMat3,
     pub state: State,
     pub state_derivative: StateDerivative,
     pub forces: Vec<Force>,
     pub torques: Vec<Torque>,
+    pub is_static: bool,
 }
 
 impl Body {
@@ -28,5 +31,22 @@ impl Body {
     }
     pub fn clear_torques(&mut self) {
         self.torques = vec![];
+    }
+}
+
+impl Default for Body {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            mass: 1.0,
+            mass_inv: 1.0,
+            inertia: DMat3::IDENTITY,
+            inertia_inv: DMat3::IDENTITY,
+            state: State::ZERO,
+            state_derivative: StateDerivative::ZERO,
+            forces: vec![],
+            torques: vec![],
+            is_static: false,
+        }
     }
 }

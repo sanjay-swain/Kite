@@ -15,15 +15,24 @@ pub struct World {
 }
 
 impl World {
-    pub fn create_body(&mut self, mass: f64, inertia: DMat3, initial_state: State) {
+    pub fn create_body(
+        &mut self,
+        mass: f64,
+        inertia: DMat3,
+        initial_state: State,
+        is_static: bool,
+    ) {
         self.bodies.push(Body {
             id: self.next_id,
             mass: mass,
+            mass_inv: 1.0 / mass,
             inertia: inertia,
+            inertia_inv: inertia.inverse(),
             state: initial_state,
             state_derivative: StateDerivative::ZERO,
             forces: vec![],
             torques: vec![],
+            is_static: is_static,
         });
         self.next_id += 1;
     }
