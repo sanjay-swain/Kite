@@ -1,24 +1,25 @@
-use glam::DVec3;
+use glam::{DQuat, DVec3};
 
-use crate::system::{
-    body::Body,
-    interactions::{Force, Torque},
-};
+use crate::system::interactions::{Force, Torque};
 
-pub fn compute_resultant(body: &Body) -> (Force, Torque) {
+pub fn compute_resultant(
+    forces: &Vec<Force>,
+    torques: &Vec<Torque>,
+    orientation: DQuat,
+) -> (Force, Torque) {
     let mut resultant_force = Force::ZERO_LOCAL;
     let mut resultant_torque = Torque::ZERO_LOCAL;
 
     let mut tmp: DVec3;
 
-    for force in &body.forces {
-        tmp = force.to_local(body.state.orientation);
+    for force in forces {
+        tmp = force.to_local(orientation);
         resultant_force.force += tmp;
         resultant_torque.torque += force.position.cross(tmp);
     }
 
-    for torque in &body.torques {
-        resultant_torque.torque += torque.to_local(body.state.orientation);
+    for torque in torques {
+        resultant_torque.torque += torque.to_local(orientation);
     }
 
     return (resultant_force, resultant_torque);
@@ -36,12 +37,10 @@ mod tests {
 
     #[test]
     fn translation() {
-        let mut body: Body = Body {
-            mass: 2.0,
-            ..Default::default()
-        };
+        let mut forces: Vec<Force> = vec![];
+        let torques: Vec<Torque> = vec![];
 
-        body.apply_force(Force {
+        forces.push(Force {
             force: DVec3 {
                 x: 10.0,
                 y: 0.0,
@@ -51,7 +50,7 @@ mod tests {
             frame: Frame::Local,
         });
 
-        body.apply_force(Force {
+        forces.push(Force {
             force: DVec3 {
                 x: 0.0,
                 y: 20.0,
@@ -61,7 +60,7 @@ mod tests {
             frame: Frame::Local,
         });
 
-        let (f, tau) = compute_resultant(&body);
+        let (f, tau) = compute_resultant(&forces, &torques, DQuat::IDENTITY);
 
         assert!((f.force.x - 10.0).abs() < 1e-6);
         assert!((f.force.y - 20.0).abs() < 1e-6);
@@ -74,12 +73,10 @@ mod tests {
 
     #[test]
     fn pure_couple() {
-        let mut body: Body = Body {
-            mass: 2.0,
-            ..Default::default()
-        };
+        let mut forces: Vec<Force> = vec![];
+        let torques: Vec<Torque> = vec![];
 
-        body.apply_force(Force {
+        forces.push(Force {
             force: DVec3 {
                 x: 0.0,
                 y: 10.0,
@@ -93,7 +90,7 @@ mod tests {
             frame: Frame::Local,
         });
 
-        body.apply_force(Force {
+        forces.push(Force {
             force: DVec3 {
                 x: 0.0,
                 y: -10.0,
@@ -106,7 +103,8 @@ mod tests {
             },
             frame: Frame::Local,
         });
-        let (f, tau) = compute_resultant(&body);
+
+        let (f, tau) = compute_resultant(&forces, &torques, DQuat::IDENTITY);
 
         assert!((f.force.x).abs() < 1e-6);
         assert!((f.force.y).abs() < 1e-6);
@@ -119,14 +117,12 @@ mod tests {
 
     #[test]
     fn force_with_torque() {
-        let mut body: Body = Body {
-            mass: 2.0,
-            ..Default::default()
-        };
+        let mut forces: Vec<Force> = vec![];
+        let torques: Vec<Torque> = vec![];
 
-        body.state.orientation = DQuat::from_axis_angle(DVec3::Z, PI / 2.0);
+        let orientation = DQuat::from_axis_angle(DVec3::Z, PI / 2.0);
 
-        body.apply_force(Force {
+        forces.push(Force {
             force: DVec3 {
                 x: 0.0,
                 y: 10.0,
@@ -139,27 +135,26 @@ mod tests {
             },
             frame: Frame::Local,
         });
-        let (f, tau) = compute_resultant(&body);
 
-        assert!((f.to_global(body.state.orientation).x + 10.0) < 1e-6);
-        assert!((f.to_global(body.state.orientation).y) < 1e-6);
-        assert!((f.to_global(body.state.orientation).x) < 1e-6);
+        let (f, tau) = compute_resultant(&forces, &torques, orientation);
 
-        assert!((tau.to_global(body.state.orientation).x) < 1e-6);
-        assert!((tau.to_global(body.state.orientation).y) < 1e-6);
-        assert!((tau.to_global(body.state.orientation).z - 10.0) < 1e-6);
+        assert!((f.to_global(orientation).x + 10.0) < 1e-6);
+        assert!((f.to_global(orientation).y) < 1e-6);
+        assert!((f.to_global(orientation).x) < 1e-6);
+
+        assert!((tau.to_global(orientation).x) < 1e-6);
+        assert!((tau.to_global(orientation).y) < 1e-6);
+        assert!((tau.to_global(orientation).z - 10.0) < 1e-6);
     }
 
     #[test]
     fn symmetry() {
-        let mut body: Body = Body {
-            mass: 2.0,
-            ..Default::default()
-        };
+        let mut forces: Vec<Force> = vec![];
+        let torques: Vec<Torque> = vec![];
 
-        body.state.orientation = DQuat::from_axis_angle(DVec3::Y, PI);
+        let orientation = DQuat::from_axis_angle(DVec3::Y, PI);
 
-        body.apply_force(Force {
+        forces.push(Force {
             force: DVec3 {
                 x: 10.0,
                 y: 0.0,
@@ -172,14 +167,15 @@ mod tests {
             },
             frame: Frame::Local,
         });
-        let (f, tau) = compute_resultant(&body);
 
-        assert!((f.to_global(body.state.orientation).x + 10.0) < 1e-6);
-        assert!((f.to_global(body.state.orientation).y) < 1e-6);
-        assert!((f.to_global(body.state.orientation).x) < 1e-6);
+        let (f, tau) = compute_resultant(&forces, &torques, orientation);
 
-        assert!((tau.to_global(body.state.orientation).x) < 1e-6);
-        assert!((tau.to_global(body.state.orientation).y - 10.0) < 1e-6);
-        assert!((tau.to_global(body.state.orientation).z) < 1e-6);
+        assert!((f.to_global(orientation).x + 10.0) < 1e-6);
+        assert!((f.to_global(orientation).y) < 1e-6);
+        assert!((f.to_global(orientation).x) < 1e-6);
+
+        assert!((tau.to_global(orientation).x) < 1e-6);
+        assert!((tau.to_global(orientation).y - 10.0) < 1e-6);
+        assert!((tau.to_global(orientation).z) < 1e-6);
     }
 }

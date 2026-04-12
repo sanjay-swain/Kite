@@ -5,7 +5,8 @@ use crate::{
 
 pub fn newton_euler(body: &mut Body) {
     // First we need to calculate the Resultant Forces and Torques.
-    let (resultant_force, resultant_torque) = compute_resultant(body);
+    let (resultant_force, resultant_torque) =
+        compute_resultant(&body.forces, &body.torques, body.state.orientation);
 
     body.state_derivative = StateDerivative {
         velocity: body.state.velocity,
