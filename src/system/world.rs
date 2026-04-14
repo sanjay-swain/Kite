@@ -3,7 +3,7 @@ use glam::{DMat3, DVec3};
 use crate::system::{
     body::Body,
     interactions::{Force, Frame},
-    state::{State, StateDerivative},
+    state::State,
 };
 
 pub struct World {
@@ -22,19 +22,34 @@ impl World {
         initial_state: State,
         is_static: bool,
     ) {
-        self.bodies.push(Body {
-            id: self.next_id,
-            mass: mass,
-            mass_inv: 1.0 / mass,
-            inertia: inertia,
-            inertia_inv: inertia.inverse(),
-            state: initial_state,
-            state_derivative: StateDerivative::ZERO,
-            forces: vec![],
-            torques: vec![],
-            is_static: is_static,
-        });
+        if is_static {
+            self.bodies.push(Body {
+                id: self.next_id,
+                mass: mass,
+                mass_inv: 0.0,
+                inertia: inertia,
+                inertia_inv: DMat3::ZERO,
+                is_static: true,
+                ..Default::default()
+            });
+        } else {
+            self.bodies.push(Body {
+                id: self.next_id,
+                mass: mass,
+                mass_inv: 1.0 / mass,
+                inertia: inertia,
+                inertia_inv: inertia.inverse(),
+                state: initial_state,
+                is_static: false,
+                ..Default::default()
+            });
+        }
+
         self.next_id += 1;
+    }
+
+    pub fn add_ground(&mut self) {
+        self.create_body(1.0, DMat3::IDENTITY, State::ZERO, true);
     }
 
     pub fn set_gravity(&mut self, g: DVec3) {
