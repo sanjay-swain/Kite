@@ -2,6 +2,7 @@ use glam::DVec3;
 
 use crate::system::state::State;
 
+#[derive(Clone, Copy)]
 pub struct JacobianRow {
     pub v_a: DVec3,
     pub w_a: DVec3,
@@ -9,20 +10,33 @@ pub struct JacobianRow {
     pub w_b: DVec3,
 }
 
+impl JacobianRow {
+    pub const ZERO: Self = Self {
+        v_a: DVec3::ZERO,
+        w_a: DVec3::ZERO,
+        v_b: DVec3::ZERO,
+        w_b: DVec3::ZERO,
+    };
+}
+
 pub trait Joint {
     fn calculate_jacobian(
+        &self,
         state_a: &State,
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
         jacobian: &mut Vec<JacobianRow>,
     );
+
+    fn restricted_dof(&self) -> usize;
 }
 
 pub struct SphericalJoint {}
 
 impl Joint for SphericalJoint {
     fn calculate_jacobian(
+        &self,
         state_a: &State,
         state_b: &State,
         anchor_a: DVec3,
@@ -52,5 +66,9 @@ impl Joint for SphericalJoint {
             v_b: DVec3::new(0.0, 0.0, 1.0),
             w_b: DVec3::new(r_b.y, -r_b.x, 0.0),
         };
+    }
+
+    fn restricted_dof(&self) -> usize {
+        return 3;
     }
 }
