@@ -1,6 +1,6 @@
 use glam::DVec3;
 
-use crate::system::joints::{JacobianRow, Joint};
+use crate::system::constraints::joints::{JacobianRow, Joint};
 
 pub struct Constraint<JointType: Joint> {
     pub body_a_index: usize,

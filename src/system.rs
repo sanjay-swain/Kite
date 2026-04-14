@@ -1,6 +1,5 @@
 pub mod body;
-pub mod constraint;
+pub mod constraints;
 pub mod interactions;
-pub mod joints;
 pub mod state;
 pub mod world;
