@@ -20,6 +20,8 @@ impl JacobianRow {
 }
 
 pub trait Joint {
+    fn restricted_dof(&self) -> usize;
+
     fn calculate_jacobian(
         &self,
         state_a: &State,
@@ -28,13 +30,15 @@ pub trait Joint {
         anchor_b: DVec3,
         jacobian: &mut Vec<JacobianRow>,
     );
-
-    fn restricted_dof(&self) -> usize;
 }
 
 pub struct SphericalJoint {}
 
 impl Joint for SphericalJoint {
+    fn restricted_dof(&self) -> usize {
+        return 3;
+    }
+
     fn calculate_jacobian(
         &self,
         state_a: &State,
@@ -66,9 +70,5 @@ impl Joint for SphericalJoint {
             v_b: DVec3::new(0.0, 0.0, 1.0),
             w_b: DVec3::new(r_b.y, -r_b.x, 0.0),
         };
-    }
-
-    fn restricted_dof(&self) -> usize {
-        return 3;
     }
 }
