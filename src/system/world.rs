@@ -1,20 +1,47 @@
 use glam::{DMat3, DVec3};
 
-use crate::system::{
-    body::Body,
-    interactions::{Force, Frame},
-    state::State,
+use crate::{
+    integrator::integrator::Integrator,
+    system::{
+        body::Body,
+        interactions::{Force, Frame},
+        state::State,
+    },
 };
 
-pub struct World {
+pub struct World<I>
+where
+    I: Integrator,
+{
     pub bodies: Vec<Body>,
+
+    pub integrator: I,
+
     pub enable_gravity: bool,
     pub gravity: Force,
     pub step_size: f64,
     next_id: usize,
 }
 
-impl World {
+impl<I> World<I>
+where
+    I: Integrator,
+{
+    pub fn new(integrator: I, step_size: f64) -> Self {
+        Self {
+            bodies: Vec::new(),
+            integrator,
+            enable_gravity: true,
+            gravity: Force {
+                force: DVec3::new(0.0, 0.0, -9.81),
+                position: DVec3::ZERO,
+                frame: Frame::Global,
+            },
+            step_size,
+            next_id: 0,
+        }
+    }
+
     pub fn create_body(
         &mut self,
         mass: f64,
@@ -68,18 +95,6 @@ impl World {
         for body in &mut self.bodies {
             body.clear_forces();
             body.clear_torques();
-        }
-    }
-}
-
-impl Default for World {
-    fn default() -> Self {
-        Self {
-            bodies: vec![],
-            enable_gravity: true,
-            gravity: Force::new(DVec3::new(0.0, 0.0, -9.81), DVec3::ZERO, Frame::Global),
-            step_size: 1e-5,
-            next_id: 0,
         }
     }
 }

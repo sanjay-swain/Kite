@@ -1,13 +1,14 @@
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::{
     dynamics::newton_euler::newton_euler,
-    integrator::euler::explicit_euler_step,
+    integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     system::{state::State, world::World},
 };
 
 fn main() {
     println!("Starting");
-    let mut world = World::default();
+    let integration = SemiImplicitEuler {};
+    let mut world = World::new(integration, 1e-5);
 
     world.enable_gravity = false;
 
@@ -32,7 +33,7 @@ fn main() {
         }
 
         // increase the time
-        explicit_euler_step(&mut world);
+        world.integrator.step(&mut world.bodies, world.step_size);
         t += world.step_size;
 
         // Clear all the forces at the end
