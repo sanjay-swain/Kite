@@ -1,23 +1,27 @@
 use glam::{DMat3, DVec3};
 
 use crate::{
-    dynamics::forces::ForceSolver,
+    dynamics::{constraint_solver::ConstraintSolver, forces::ForceSolver},
     integrator::integrator::Integrator,
     system::{
         body::Body,
+        constraints::constraint::Constraint,
         interactions::{Force, Frame},
         state::State,
     },
 };
 
-pub struct World<F, I>
+pub struct World<F, C, I>
 where
     F: ForceSolver,
+    C: ConstraintSolver,
     I: Integrator,
 {
     pub bodies: Vec<Body>,
+    pub constraints: Vec<Constraint>,
 
     pub force_solver: F,
+    pub constraint_solver: C,
     pub integrator: I,
 
     pub enable_gravity: bool,
@@ -26,15 +30,18 @@ where
     next_id: usize,
 }
 
-impl<F, I> World<F, I>
+impl<F, C, I> World<F, C, I>
 where
     F: ForceSolver,
+    C: ConstraintSolver,
     I: Integrator,
 {
-    pub fn new(force_solver: F, integrator: I, step_size: f64) -> Self {
+    pub fn new(force_solver: F, constraint_solver: C, integrator: I, step_size: f64) -> Self {
         Self {
             bodies: Vec::new(),
+            constraints: Vec::new(),
             force_solver,
+            constraint_solver,
             integrator,
             enable_gravity: true,
             gravity: Force {
