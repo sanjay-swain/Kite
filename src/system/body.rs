@@ -7,14 +7,19 @@ use crate::system::{
 
 pub struct Body {
     pub id: usize,
+
     pub mass: f64,
     pub mass_inv: f64,
+
     pub inertia: DMat3,
     pub inertia_inv: DMat3,
+
     pub state: State,
     pub state_derivative: StateDerivative,
+
     pub forces: Vec<Force>,
     pub torques: Vec<Torque>,
+
     pub is_static: bool,
 }
 
