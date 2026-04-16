@@ -5,7 +5,7 @@ use crate::{
     integrator::integrator::Integrator,
     system::{
         body::Body,
-        constraints::constraint::Constraint,
+        constraints::{constraint::Constraint, joints::Joint},
         interactions::{Force, Frame},
         state::State,
     },
@@ -89,6 +89,35 @@ where
 
     pub fn add_ground(&mut self) {
         self.create_body(1.0, DMat3::IDENTITY, State::ZERO, true);
+    }
+
+    pub fn create_constraint(
+        &mut self,
+        body_a_id: usize,
+        body_b_id: usize,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+        joint: Box<dyn Joint>,
+    ) {
+        let mut body_a_index = 0;
+        let mut body_b_index = 0;
+        let mut i = 0;
+        while i < self.bodies.len() {
+            if self.bodies[i].id == body_a_id {
+                body_a_index = i;
+            }
+            if self.bodies[i].id == body_b_id {
+                body_b_index = i;
+            }
+            i = i + 1;
+        }
+        self.constraints.push(Constraint::new(
+            body_a_index,
+            body_b_index,
+            anchor_a,
+            anchor_b,
+            joint,
+        ));
     }
 
     pub fn set_gravity(&mut self, g: DVec3) {
