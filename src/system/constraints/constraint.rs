@@ -13,8 +13,8 @@ pub struct Constraint {
 
     pub joint: Box<dyn Joint>,
 
-    pub jacobian: Vec<JacobianRow>,
-    pub velocity_bias: Vec<f64>,
+    pub jacobian: [JacobianRow; 6],
+    pub velocity_bias: [f64; 6],
 }
 
 impl Constraint {
@@ -25,15 +25,14 @@ impl Constraint {
         body_b_anchor: DVec3,
         joint: Box<dyn Joint>,
     ) -> Self {
-        let rows = joint.restricted_dof();
         Self {
             body_a_index,
             body_b_index,
             body_a_anchor,
             body_b_anchor,
             joint,
-            jacobian: vec![JacobianRow::ZERO; rows],
-            velocity_bias: vec![0.0; rows],
+            jacobian: [JacobianRow::ZERO; 6],
+            velocity_bias: [0.0; 6],
         }
     }
 }

@@ -18,7 +18,7 @@ impl Joint for SphericalJoint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-        jacobian: &mut Vec<JacobianRow>,
+        jacobian: &mut [JacobianRow; 6],
     ) {
         let r_a = state_a.orientation.mul_vec3(anchor_a);
         let r_b = state_b.orientation.mul_vec3(anchor_b);
@@ -51,7 +51,7 @@ impl Joint for SphericalJoint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-        velocity_bias: &mut Vec<f64>,
+        velocity_bias: &mut [f64; 6],
     ) {
         let r_a = state_a.orientation.mul_vec3(anchor_a);
         let r_b = state_b.orientation.mul_vec3(anchor_b);

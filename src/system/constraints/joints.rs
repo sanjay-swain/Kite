@@ -17,6 +17,13 @@ impl JacobianRow {
         v_b: DVec3::ZERO,
         w_b: DVec3::ZERO,
     };
+
+    pub fn dot(&self, jacobian_row: &JacobianRow) -> f64 {
+        return self.v_a.dot(jacobian_row.v_a)
+            + self.w_a.dot(jacobian_row.w_a)
+            + self.w_b.dot(jacobian_row.w_b)
+            + self.v_b.dot(jacobian_row.v_b);
+    }
 }
 
 pub trait Joint {
@@ -28,7 +35,7 @@ pub trait Joint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-        jacobian: &mut Vec<JacobianRow>,
+        jacobian: &mut [JacobianRow; 6],
     );
 
     fn calculate_velocity_bias(
@@ -37,6 +44,6 @@ pub trait Joint {
         state_b: &State,
         anchor_a: DVec3,
         anchor_b: DVec3,
-        velocity_bias: &mut Vec<f64>,
+        velocity_bias: &mut [f64; 6],
     );
 }
