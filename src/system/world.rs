@@ -6,7 +6,7 @@ use crate::{
     system::{
         body::Body,
         constraints::{constraint::Constraint, joints::Joint},
-        interactions::{Force, Frame},
+        interactions::{Force, Frame, Torque},
         state::State,
     },
 };
@@ -60,7 +60,8 @@ where
         inertia: DMat3,
         initial_state: State,
         is_static: bool,
-    ) {
+    ) -> usize {
+        let id = self.next_id;
         if is_static {
             self.bodies.push(Body {
                 id: self.next_id,
@@ -85,10 +86,12 @@ where
         }
 
         self.next_id += 1;
+
+        return id;
     }
 
-    pub fn add_ground(&mut self) {
-        self.create_body(1.0, DMat3::IDENTITY, State::ZERO, true);
+    pub fn add_ground(&mut self) -> usize {
+        self.create_body(1.0, DMat3::IDENTITY, State::ZERO, true)
     }
 
     pub fn create_constraint(
@@ -129,6 +132,32 @@ where
             for body in &mut self.bodies {
                 body.apply_force(self.gravity);
             }
+        }
+    }
+
+    pub fn apply_constraint_forces(&mut self) {
+        for constraint in &mut self.constraints {
+            self.bodies[constraint.body_a_index].apply_force(Force {
+                force: constraint.constraint_forces.f_a,
+                position: constraint.body_a_anchor,
+                frame: Frame::Global,
+            });
+
+            self.bodies[constraint.body_a_index].apply_torque(Torque {
+                torque: constraint.constraint_forces.t_a,
+                frame: Frame::Global,
+            });
+
+            self.bodies[constraint.body_b_index].apply_force(Force {
+                force: constraint.constraint_forces.f_b,
+                position: constraint.body_b_anchor,
+                frame: Frame::Global,
+            });
+
+            self.bodies[constraint.body_b_index].apply_torque(Torque {
+                torque: constraint.constraint_forces.t_b,
+                frame: Frame::Global,
+            });
         }
     }
 
