@@ -66,7 +66,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             pos_y: world.constraints[0].constraint_forces.f_a.y,
             pos_z: world.constraints[0].constraint_forces.f_a.z,
             vel_mag: world.bodies[1].state.velocity.length(),
-            // constraint_error: calculate_joint_error(),
+            constraint_error: world.constraints[0].joint.calculate_joint_error(
+                &world.bodies[0].state,
+                &world.bodies[1].state,
+                world.constraints[0].body_a_anchor,
+                world.constraints[0].body_b_anchor,
+            ),
             force_mag: world.constraints[0].constraint_forces.f_a.x,
         };
 

@@ -46,6 +46,14 @@ pub trait Joint {
         anchor_b: DVec3,
         velocity_bias: &mut [f64; 6],
     );
+
+    fn calculate_joint_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> f64;
 }
 
 #[cfg(test)]

@@ -79,6 +79,18 @@ impl Joint for SphericalJoint {
         velocity_bias[1] = res_y_b - res_y_a;
         velocity_bias[2] = res_z_b - res_z_a;
     }
+
+    fn calculate_joint_error(
+        &self,
+        state_a: &State,
+        state_b: &State,
+        anchor_a: DVec3,
+        anchor_b: DVec3,
+    ) -> f64 {
+        ((state_b.position + state_b.orientation * anchor_b)
+            - (state_a.position + state_a.orientation * anchor_a))
+            .length()
+    }
 }
 
 #[cfg(test)]
