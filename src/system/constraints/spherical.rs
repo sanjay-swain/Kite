@@ -55,24 +55,23 @@ impl Joint for SphericalJoint {
     ) {
         let r_a = state_a.orientation.mul_vec3(anchor_a);
         let r_b = state_b.orientation.mul_vec3(anchor_b);
-        let omega_a = state_a.angular_velocity;
-        let omega_b = state_b.angular_velocity;
-        velocity_bias[0] = (-omega_a.x * (omega_a.z * r_a.z + omega_a.y * r_a.y)
-            + omega_a.y * omega_a.y * r_a.x
-            + omega_a.z * omega_a.z * r_a.x)
-            - (-omega_b.x * (omega_b.z * r_b.z + omega_b.y * r_b.y)
-                + omega_b.y * omega_b.y * r_b.x
-                + omega_b.z * omega_b.z * r_b.x);
+        let w_a = state_a.angular_velocity;
+        let w_b = state_b.angular_velocity;
+        velocity_bias[0] = (-w_a.x * (w_a.z * r_a.z + w_a.y * r_a.y)
+            + w_a.y * w_a.y * r_a.x
+            + w_a.z * w_a.z * r_a.x)
+            - (-w_b.x * (w_b.z * r_b.z + w_b.y * r_b.y)
+                + w_b.y * w_b.y * r_b.x
+                + w_b.z * w_b.z * r_b.x);
 
-        velocity_bias[1] = (omega_a.x * omega_a.x * r_a.y
-            - omega_a.y * (omega_a.z * r_a.z + omega_a.x * r_a.x)
-            + omega_a.z * omega_a.z * r_a.x)
-            - (omega_b.x * omega_b.x * r_b.y - omega_b.y * (omega_b.z * r_b.z + omega_b.x * r_b.x)
-                + omega_b.z * omega_b.z * r_b.x);
+        velocity_bias[1] = (w_a.x * w_a.x * r_a.y - w_a.y * (w_a.z * r_a.z + w_a.x * r_a.x)
+            + w_a.z * w_a.z * r_a.x)
+            - (w_b.x * w_b.x * r_b.y - w_b.y * (w_b.z * r_b.z + w_b.x * r_b.x)
+                + w_b.z * w_b.z * r_b.x);
 
-        velocity_bias[2] = (omega_a.x * omega_a.x * r_a.z + omega_a.y * omega_a.y * r_a.z
-            - omega_a.z * (omega_a.y * r_a.y + omega_a.x * r_a.x))
-            - (omega_b.x * omega_b.x * r_b.z + omega_b.y * omega_b.y * r_b.z
-                - omega_b.z * (omega_b.y * r_b.y + omega_b.x * r_b.x));
+        velocity_bias[2] = (w_a.x * w_a.x * r_a.z + w_a.y * w_a.y * r_a.z
+            - w_a.z * (w_a.y * r_a.y + w_a.x * r_a.x))
+            - (w_b.x * w_b.x * r_b.z + w_b.y * w_b.y * r_b.z
+                - w_b.z * (w_b.y * r_b.y + w_b.x * r_b.x));
     }
 }
