@@ -136,7 +136,7 @@ where
     }
 
     pub fn apply_constraint_forces(&mut self) {
-        for constraint in &mut self.constraints {
+        for constraint in &self.constraints {
             self.bodies[constraint.body_a_index].apply_force(Force {
                 force: constraint.constraint_forces.f_a,
                 position: constraint.body_a_anchor,
