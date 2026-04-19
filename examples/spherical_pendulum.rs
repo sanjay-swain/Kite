@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut t = 0.0;
 
-    while t < 10.0 {
+    while t < 5.0 {
         world.apply_gravity_force();
 
         for constraint in &mut world.constraints {
@@ -62,17 +62,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let log = PhysicsLog {
             time: t,
-            pos_x: world.constraints[0].constraint_forces.f_a.x,
-            pos_y: world.constraints[0].constraint_forces.f_a.y,
-            pos_z: world.constraints[0].constraint_forces.f_a.z,
-            vel_mag: world.bodies[1].state.velocity.length(),
+            pos_x: world.bodies[b1].state.position.x,
+            pos_y: world.bodies[b1].state.position.y,
+            pos_z: world.bodies[b1].state.position.z,
+
+            vel_x: world.bodies[b1].state.velocity.x,
+            vel_y: world.bodies[b1].state.velocity.y,
+            vel_z: world.bodies[b1].state.velocity.z,
+
             constraint_error: world.constraints[0].joint.calculate_joint_error(
                 &world.bodies[0].state,
                 &world.bodies[1].state,
                 world.constraints[0].body_a_anchor,
                 world.constraints[0].body_b_anchor,
             ),
-            force_mag: world.constraints[0].constraint_forces.f_a.x,
+
+            force_x: world.constraints[0].constraint_forces.t_b.x,
+            force_y: world.constraints[0].constraint_forces.t_b.y,
+            force_z: world.constraints[0].constraint_forces.t_b.z,
         };
 
         wtr.serialize(log)?;
