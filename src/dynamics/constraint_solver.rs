@@ -28,13 +28,10 @@ impl ConstraintSolver for AccelerationConstraint {
         let body_a_orient = bodies[constraint.body_a_index].state.orientation;
         let body_b_orient = bodies[constraint.body_b_index].state.orientation;
 
-        let r_a = DMat3::from_quat(body_a_orient);
-        let r_b = DMat3::from_quat(body_b_orient);
-
         let m_a = bodies[constraint.body_a_index].mass_inv;
-        let i_a = r_a * bodies[constraint.body_a_index].inertia_inv * r_a.transpose();
+        let i_a = bodies[constraint.body_a_index].inertia_inv_world();
         let m_b = bodies[constraint.body_b_index].mass_inv;
-        let i_b = r_b * bodies[constraint.body_b_index].inertia_inv * r_b.transpose();
+        let i_b = bodies[constraint.body_b_index].inertia_inv_world();
 
         let f_a_ext: Force;
         let f_b_ext: Force;

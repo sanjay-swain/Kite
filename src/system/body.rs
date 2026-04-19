@@ -37,6 +37,11 @@ impl Body {
     pub fn clear_torques(&mut self) {
         self.torques = vec![];
     }
+
+    pub fn inertia_inv_world(&self) -> DMat3 {
+        let r = DMat3::from_quat(self.state.orientation);
+        r * self.inertia_inv * r.transpose()
+    }
 }
 
 impl Default for Body {
