@@ -18,6 +18,10 @@ pub struct PhysicsLog {
     pub ori_y: f64,
     pub ori_z: f64,
 
+    pub ang_vel_x: f64,
+    pub ang_vel_y: f64,
+    pub ang_vel_z: f64,
+
     pub constraint_error: f64, // Important for checking solver health
 
     pub force_a_x: f64,
@@ -54,6 +58,10 @@ impl PhysicsLog {
         ori_x: 0.0,
         ori_y: 0.0,
         ori_z: 0.0,
+
+        ang_vel_x: 0.0,
+        ang_vel_y: 0.0,
+        ang_vel_z: 0.0,
 
         constraint_error: 0.0, // Important for checking solver health
 
@@ -93,6 +101,12 @@ impl PhysicsLog {
 
         (self.ori_x, self.ori_y, self.ori_z) = body.state.orientation.to_euler(glam::EulerRot::XYZ);
 
+        (self.ang_vel_x, self.ang_vel_y, self.ang_vel_z) = (
+            body.state.angular_velocity.x,
+            body.state.angular_velocity.y,
+            body.state.angular_velocity.z,
+        );
+
         (self.force_a_x, self.force_a_y, self.force_a_z) = (
             constraint.constraint_forces[0],
             constraint.constraint_forces[1],
@@ -115,6 +129,30 @@ impl PhysicsLog {
             constraint.constraint_forces[9],
             constraint.constraint_forces[10],
             constraint.constraint_forces[11],
+        );
+    }
+
+    pub fn update_body(&mut self, body: &Body, time: f64) {
+        self.time = time;
+
+        (self.pos_x, self.pos_y, self.pos_z) = (
+            body.state.position.x,
+            body.state.position.y,
+            body.state.position.z,
+        );
+
+        (self.vel_x, self.vel_y, self.vel_z) = (
+            body.state.velocity.x,
+            body.state.velocity.y,
+            body.state.velocity.z,
+        );
+
+        (self.ori_x, self.ori_y, self.ori_z) = body.state.orientation.to_euler(glam::EulerRot::XYZ);
+
+        (self.ang_vel_x, self.ang_vel_y, self.ang_vel_z) = (
+            body.state.angular_velocity.x,
+            body.state.angular_velocity.y,
+            body.state.angular_velocity.z,
         );
     }
 }
