@@ -97,9 +97,9 @@ where
         }
 
         // 3. Inertia matrix must be symmetric
-        if !((inertia.x_axis.y - inertia.y_axis.x).abs() > 1e-6
-            && (inertia.x_axis.z - inertia.z_axis.x).abs() > 1e-6
-            && (inertia.z_axis.y - inertia.y_axis.z).abs() > 1e-6)
+        if !((inertia.x_axis.y - inertia.y_axis.x).abs() < 1e-6
+            && (inertia.x_axis.z - inertia.z_axis.x).abs() < 1e-6
+            && (inertia.z_axis.y - inertia.y_axis.z).abs() < 1e-6)
         {
             return Err(PhysicsError::InvalidInertia(inertia));
         }

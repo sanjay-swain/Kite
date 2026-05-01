@@ -17,7 +17,7 @@ use kite_core::{
 fn main() -> Result<(), Box<dyn Error>> {
     // Create a file if it doesn't already exists
     // If already exists then overwrite from start
-    let file = File::create("dzhanibekov_simulation.csv")?;
+    let file = File::create("simple_sim.csv")?;
     let mut wtr = csv::Writer::from_writer(file);
 
     println!("Starting");
@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut t: f64 = 0.0;
 
-    while t < 10.0 {
+    while t < 5.0 {
         // Apply forces
         world.apply_gravity_force();
         world.bodies[0].apply_torque(Torque::new(
