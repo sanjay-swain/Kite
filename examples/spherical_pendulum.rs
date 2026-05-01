@@ -23,9 +23,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let integration = SemiImplicitEuler {};
     let mut world = World::new(force_solver, constraint_solver, integration, 1e-5);
 
-    let gr = world.add_ground();
+    let gr = match world.add_ground() {
+        Ok(it) => it,
+        Err(err) => panic!(),
+    };
 
-    let b1 = world.create_body(
+    let b1 = match world.create_body(
         1.0,
         DMat3::from_diagonal(DVec3::new(0.004, 0.004, 0.004)),
         State {
@@ -35,7 +38,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             angular_velocity: DVec3::ZERO,
         },
         false,
-    );
+    ) {
+        Ok(it) => it,
+        Err(err) => panic!(),
+    };
 
     world.create_constraint(
         gr,
@@ -60,27 +66,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         world.integrator.step(&mut world.bodies, world.step_size);
 
-        let log = PhysicsLog {
-            time: t,
-            pos_x: world.bodies[b1].state.position.x,
-            pos_y: world.bodies[b1].state.position.y,
-            pos_z: world.bodies[b1].state.position.z,
+        let ener = world.bodies[b1].mass
+            * (world.gravity.force.length() * world.bodies[b1].state.position.z
+                + 0.5
+                    * world.bodies[b1].state.velocity.length()
+                    * world.bodies[b1].state.velocity.length());
 
-            vel_x: world.bodies[b1].state.velocity.x,
-            vel_y: world.bodies[b1].state.velocity.y,
-            vel_z: world.bodies[b1].state.velocity.z,
+        let mut log = PhysicsLog::ZERO;
 
-            constraint_error: world.constraints[0].joint.calculate_joint_error(
-                &world.bodies[0].state,
-                &world.bodies[1].state,
-                world.constraints[0].body_a_anchor,
-                world.constraints[0].body_b_anchor,
-            ),
+        log.update(&world.bodies[1], &world.constraints[0], t);
 
-            force_x: world.constraints[0].constraint_forces[9],
-            force_y: world.constraints[0].constraint_forces[10],
-            force_z: world.constraints[0].constraint_forces[11],
-        };
+        log.energy = ener;
 
         wtr.serialize(log)?;
 

@@ -2,6 +2,7 @@ use glam::{DMat3, DVec3};
 
 use crate::{
     dynamics::{constraint_solver::ConstraintSolver, forces::ForceSolver},
+    error::PhysicsError,
     integrator::integrator::Integrator,
     system::{
         body::Body,
@@ -60,37 +61,62 @@ where
         inertia: DMat3,
         initial_state: State,
         is_static: bool,
-    ) -> usize {
+    ) -> Result<usize, PhysicsError> {
         let id = self.next_id;
-        if is_static {
-            self.bodies.push(Body {
-                id: self.next_id,
-                mass: mass,
-                mass_inv: 0.0,
-                inertia: inertia,
-                inertia_inv: DMat3::ZERO,
-                is_static: true,
-                ..Default::default()
-            });
-        } else {
-            self.bodies.push(Body {
-                id: self.next_id,
-                mass: mass,
-                mass_inv: 1.0 / mass,
-                inertia: inertia,
-                inertia_inv: inertia.inverse(),
-                state: initial_state,
-                is_static: false,
-                ..Default::default()
-            });
+
+        let mut mass_inv = 0.0;
+        let mut inertia_inv = DMat3::ZERO;
+
+        if !(mass > 0.0) {
+            return Err(PhysicsError::InvalidMass(mass));
         }
+
+        // Validate the inertia matrix
+        // 1. All diagonal elements must be greater than zero
+        let diagonal = inertia.diagonal();
+        if (diagonal.x <= 0.0) || (diagonal.y <= 0.0) || (diagonal.z <= 0.0) {
+            return Err(PhysicsError::InvalidInertia(inertia));
+        }
+
+        // 2. The product of inertia of any two product of inertia must be
+        // greater than the third product of inertia
+        if inertia.x_axis.y + inertia.x_axis.z < inertia.y_axis.z
+            || (inertia.x_axis.y + inertia.y_axis.z < inertia.x_axis.z)
+            || (inertia.y_axis.z + inertia.x_axis.z < inertia.x_axis.y)
+        {
+            return Err(PhysicsError::InvalidInertia(inertia));
+        }
+
+        // 3. Inertia matrix must be symmetric
+        if !((inertia.x_axis.y - inertia.y_axis.x).abs() > 1e-6
+            && (inertia.x_axis.z - inertia.z_axis.x).abs() > 1e-6
+            && (inertia.z_axis.y - inertia.y_axis.z).abs() > 1e-6)
+        {
+            return Err(PhysicsError::InvalidInertia(inertia));
+        }
+
+        if !is_static {
+            mass_inv = 1.0 / mass;
+            inertia_inv = inertia.inverse();
+        }
+
+        self.bodies.push(Body {
+            id: self.next_id,
+            mass: mass,
+            mass_inv: mass_inv,
+            inertia: inertia,
+            inertia_inv: inertia_inv,
+            state: initial_state,
+            is_static: is_static,
+            ..Default::default()
+        });
 
         self.next_id += 1;
 
-        return id;
+        return Ok(id);
     }
 
-    pub fn add_ground(&mut self) -> usize {
+    pub fn add_ground(&mut self) -> Result<usize, PhysicsError> {
         self.create_body(1.0, DMat3::IDENTITY, State::ZERO, true)
     }
 
