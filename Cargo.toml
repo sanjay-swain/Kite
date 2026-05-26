@@ -1,8 +1,12 @@
-[package]
-name = "kite-core"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+    "crates/*",
+    "kite_sim",
+]
+resolver = "3"
 
-[dependencies]
-glam = "0.32"
+[workspace.dependencies]
+glam = "0.33"
 enum_dispatch = "0.3.13"
+
+kite-core = { path = "crates/kite_core" }

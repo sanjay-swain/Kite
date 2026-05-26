@@ -1,0 +1,8 @@
+[package]
+name = "kite-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+glam = { workspace = true }
+enum_dispatch = { workspace = true }
