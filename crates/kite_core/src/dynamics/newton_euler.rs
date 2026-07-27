@@ -1,11 +1,11 @@
 use crate::{
-    dynamics::forces::{ForceSolver, compute_resultant},
+    dynamics::forces::{DynamicSolver, compute_resultant},
     system::{body::Body, state::StateDerivative},
 };
 
 pub struct NewtonEuler {}
 
-impl ForceSolver for NewtonEuler {
+impl DynamicSolver for NewtonEuler {
     fn solve(&self, bodies: &mut Vec<Body>) {
         for body in bodies {
             let (resultant_force, resultant_torque) =

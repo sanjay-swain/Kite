@@ -28,7 +28,7 @@ pub fn compute_resultant(
     return (resultant_force, resultant_torque);
 }
 
-pub trait ForceSolver {
+pub trait DynamicSolver {
     fn solve(&self, bodies: &mut Vec<Body>);
 }
 

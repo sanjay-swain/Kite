@@ -1,7 +1,7 @@
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::{
     dynamics::{
-        constraint_solver::ConstraintSolver, forces::ForceSolver, newton_euler::NewtonEuler,
+        constraint_solver::ConstraintSolver, forces::DynamicSolver, newton_euler::NewtonEuler,
         soft_constraint::SoftConstraint,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},

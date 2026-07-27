@@ -1,7 +1,7 @@
 use glam::{DMat3, DQuat, DVec3};
 
 use crate::{
-    dynamics::{constraint_solver::ConstraintSolver, forces::ForceSolver},
+    dynamics::{constraint_solver::ConstraintSolver, forces::DynamicSolver},
     error::PhysicsError,
     integrator::integrator::Integrator,
     system::{
@@ -12,16 +12,16 @@ use crate::{
     },
 };
 
-pub struct World<F, C, I>
+pub struct World<D, C, I>
 where
-    F: ForceSolver,
+    D: DynamicSolver,
     C: ConstraintSolver,
     I: Integrator,
 {
     pub bodies: Vec<Body>,
     pub constraints: Vec<Constraint>,
 
-    pub force_solver: F,
+    pub force_solver: D,
     pub constraint_solver: C,
     pub integrator: I,
 
@@ -31,14 +31,14 @@ where
     next_id: usize,
 }
 
-impl<F, C, I> World<F, C, I>
+impl<D, C, I> World<D, C, I>
 where
-    F: ForceSolver,
+    D: DynamicSolver,
     C: ConstraintSolver,
     I: Integrator,
 {
     pub fn new(
-        force_solver: F,
+        force_solver: D,
         constraint_solver: C,
         integrator: I,
         step_size: f64,
