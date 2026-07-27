@@ -11,11 +11,14 @@ fn main() {
     println!("Starting");
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
-    let integration = SemiImplicitEuler {};
-    let mut world = match World::new(force_solver, constraint_solver, integration, 1e-3) {
-        Ok(it) => it,
-        Err(_err) => panic!(),
+    let integration = {
+        let this = SemiImplicitEuler::new(1e-3);
+        match this {
+            Ok(t) => t,
+            Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
+        }
     };
+    let mut world = World::new(force_solver, constraint_solver, integration);
 
     world.enable_gravity = false;
 
@@ -40,12 +43,12 @@ fn main() {
 
     while t < 10.0 {
         // Update the state_derivative of each body
-        world.force_solver.solve(&mut world.bodies);
+        world.dynamic_solver.solve(&mut world.bodies);
 
         // increase the time
-        world.integrator.step(&mut world.bodies, world.step_size);
+        world.integrator.step(&mut world.bodies);
 
-        t += world.step_size;
+        t += world.integrator.step_size;
 
         // Clear all the forces at the end
         world.clear_forces_and_torques();

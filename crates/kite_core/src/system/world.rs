@@ -21,13 +21,12 @@ where
     pub bodies: Vec<Body>,
     pub constraints: Vec<Constraint>,
 
-    pub force_solver: D,
+    pub dynamic_solver: D,
     pub constraint_solver: C,
     pub integrator: I,
 
     pub enable_gravity: bool,
     pub gravity: Force,
-    pub step_size: f64,
     next_id: usize,
 }
 
@@ -37,30 +36,20 @@ where
     C: ConstraintSolver,
     I: Integrator,
 {
-    pub fn new(
-        force_solver: D,
-        constraint_solver: C,
-        integrator: I,
-        step_size: f64,
-    ) -> Result<Self, PhysicsError> {
-        if step_size > 0.0 {
-            Ok(Self {
-                bodies: Vec::new(),
-                constraints: Vec::new(),
-                force_solver,
-                constraint_solver,
-                integrator,
-                enable_gravity: true,
-                gravity: Force {
-                    force: DVec3::new(0.0, 0.0, -9.81),
-                    position: DVec3::ZERO,
-                    frame: Frame::Global,
-                },
-                step_size,
-                next_id: 0,
-            })
-        } else {
-            Err(PhysicsError::InvalidStepSize(step_size))
+    pub fn new(dynamic_solver: D, constraint_solver: C, integrator: I) -> Self {
+        Self {
+            bodies: Vec::new(),
+            constraints: Vec::new(),
+            dynamic_solver,
+            constraint_solver,
+            integrator,
+            enable_gravity: true,
+            gravity: Force {
+                force: DVec3::new(0.0, 0.0, -9.81),
+                position: DVec3::ZERO,
+                frame: Frame::Global,
+            },
+            next_id: 0,
         }
     }
 
