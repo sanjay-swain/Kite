@@ -29,9 +29,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "kite_sim"
+name = "kite-sim"
 version = "0.1.0"
 dependencies = [
+ "glam",
  "kite-core",
 ]
 

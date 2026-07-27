@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 kite-core = { workspace = true }
+glam = { workspace = true }
