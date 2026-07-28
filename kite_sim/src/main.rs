@@ -9,16 +9,16 @@ use kite_core::{
 
 fn main() {
     println!("Starting");
-    let force_solver = NewtonEuler {};
+    let dynamic_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
-    let integration = {
+    let integrator = {
         let this = SemiImplicitEuler::new(1e-3);
         match this {
             Ok(t) => t,
             Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
         }
     };
-    let mut world = World::new(force_solver, constraint_solver, integration);
+    let mut world = World::new(dynamic_solver, constraint_solver, integrator);
 
     world.enable_gravity = false;
 
