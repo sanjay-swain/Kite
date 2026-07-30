@@ -1,0 +1,2 @@
+[tool.uv.workspace]
+members = ["crates/kite_python_bindings"]
