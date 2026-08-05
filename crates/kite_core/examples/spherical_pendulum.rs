@@ -3,6 +3,7 @@ use kite_core::{
     dynamics::{
         constraint_solver::{AccelerationConstraint, ConstraintSolver},
         forces::DynamicSolver,
+        gravity::{ConstantGravity, GravitySolver},
         newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
@@ -25,7 +26,14 @@ fn main() {
             Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
         }
     };
-    let mut world = World::new(force_solver, constraint_solver, integration);
+    let gravity = ConstantGravity {
+        field: DVec3 {
+            x: 0.0,
+            y: 0.0,
+            z: -9.81,
+        },
+    };
+    let mut world = World::new(force_solver, constraint_solver, integration, gravity);
 
     let gr = match world.add_ground() {
         Ok(it) => it,
@@ -62,7 +70,7 @@ fn main() {
     let mut t: f64 = 0.0;
 
     while t < 10.0 {
-        world.apply_gravity_force();
+        world.gravity_solver.solve(&mut world.bodies);
 
         world.bodies[b1].apply_force(Force::new(
             DVec3::X,

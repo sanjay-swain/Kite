@@ -1,7 +1,10 @@
 use glam::{DMat3, DVec3};
 use kite_core::{
     dynamics::{
-        constraint_solver::AccelerationConstraint, forces::DynamicSolver, newton_euler::NewtonEuler,
+        constraint_solver::AccelerationConstraint,
+        forces::DynamicSolver,
+        gravity::{ConstantGravity, GravitySolver},
+        newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     system::{
@@ -22,9 +25,14 @@ fn main() {
             Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
         }
     };
-    let mut world = World::new(force_solver, constraint_solver, integration);
-
-    world.enable_gravity = false;
+    let gravity = ConstantGravity {
+        field: DVec3 {
+            x: 0.0,
+            y: 0.0,
+            z: -9.81,
+        },
+    };
+    let mut world = World::new(force_solver, constraint_solver, integration, gravity);
 
     let _ = match world.create_body(3.0, DMat3::from_diagonal(DVec3::ONE), State::ZERO, false) {
         Ok(it) => it,
@@ -35,7 +43,7 @@ fn main() {
 
     while t < 5.0 {
         // Apply forces
-        world.apply_gravity_force();
+        world.gravity_solver.solve(&mut world.bodies);
         world.bodies[0].apply_torque(Torque::new(
             DVec3 {
                 x: 1.0,

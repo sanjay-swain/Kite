@@ -1,7 +1,9 @@
 use glam::{DMat3, DQuat, DVec3};
 
 use crate::{
-    dynamics::{constraint_solver::ConstraintSolver, forces::DynamicSolver},
+    dynamics::{
+        constraint_solver::ConstraintSolver, forces::DynamicSolver, gravity::GravitySolver,
+    },
     error::PhysicsError,
     integrator::integrator::Integrator,
     system::{
@@ -12,11 +14,12 @@ use crate::{
     },
 };
 
-pub struct World<D, C, I>
+pub struct World<D, C, I, G>
 where
     D: DynamicSolver,
     C: ConstraintSolver,
     I: Integrator,
+    G: GravitySolver,
 {
     pub bodies: Vec<Body>,
     pub constraints: Vec<Constraint>,
@@ -24,31 +27,26 @@ where
     pub dynamic_solver: D,
     pub constraint_solver: C,
     pub integrator: I,
+    pub gravity_solver: G,
 
-    pub enable_gravity: bool,
-    pub gravity: Force,
     next_id: usize,
 }
 
-impl<D, C, I> World<D, C, I>
+impl<D, C, I, G> World<D, C, I, G>
 where
     D: DynamicSolver,
     C: ConstraintSolver,
     I: Integrator,
+    G: GravitySolver,
 {
-    pub fn new(dynamic_solver: D, constraint_solver: C, integrator: I) -> Self {
+    pub fn new(dynamic_solver: D, constraint_solver: C, integrator: I, gravity: G) -> Self {
         Self {
             bodies: Vec::new(),
             constraints: Vec::new(),
             dynamic_solver,
             constraint_solver,
             integrator,
-            enable_gravity: true,
-            gravity: Force {
-                force: DVec3::new(0.0, 0.0, -9.81),
-                position: DVec3::ZERO,
-                frame: Frame::Global,
-            },
+            gravity_solver: gravity,
             next_id: 0,
         }
     }
@@ -149,18 +147,6 @@ where
             joint_frame_b,
             joint,
         ));
-    }
-
-    pub fn set_gravity(&mut self, g: DVec3) {
-        self.gravity = Force::new(g, DVec3::ZERO, Frame::Global);
-    }
-
-    pub fn apply_gravity_force(&mut self) {
-        if self.enable_gravity {
-            for body in &mut self.bodies {
-                body.apply_force(self.gravity);
-            }
-        }
     }
 
     pub fn apply_constraint_forces(&mut self) {

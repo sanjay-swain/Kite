@@ -1,7 +1,10 @@
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::{
     dynamics::{
-        constraint_solver::AccelerationConstraint, forces::DynamicSolver, newton_euler::NewtonEuler,
+        constraint_solver::AccelerationConstraint,
+        forces::DynamicSolver,
+        gravity::{ConstantGravity, GravitySolver},
+        newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
     system::{state::State, world::World},
@@ -9,6 +12,7 @@ use kite_core::{
 
 fn main() {
     println!("Starting");
+    // Simulator Config
     let dynamic_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
     let integrator = {
@@ -18,9 +22,17 @@ fn main() {
             Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
         }
     };
-    let mut world = World::new(dynamic_solver, constraint_solver, integrator);
+    let gravity = ConstantGravity {
+        field: DVec3 {
+            x: 0.0,
+            y: 0.0,
+            z: -9.81,
+        },
+    };
 
-    world.enable_gravity = false;
+    // Initialize world
+    let mut world: World<NewtonEuler, AccelerationConstraint, SemiImplicitEuler, ConstantGravity> =
+        World::new(dynamic_solver, constraint_solver, integrator, gravity);
 
     match world.create_body(
         3.0,
@@ -29,7 +41,7 @@ fn main() {
             position: DVec3::ZERO,
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
-            angular_velocity: DVec3::new(0.0, 10.0, 0.01),
+            angular_velocity: DVec3::ZERO,
         },
         false,
     ) {
@@ -39,9 +51,8 @@ fn main() {
 
     let mut t: f64 = 0.0;
 
-    let mut i = 0;
-
-    while t < 10.0 {
+    while t < 100.0 {
+        world.gravity_solver.solve(&mut world.bodies);
         // Update the state_derivative of each body
         world.dynamic_solver.solve(&mut world.bodies);
 
@@ -52,18 +63,7 @@ fn main() {
 
         // Clear all the forces at the end
         world.clear_forces_and_torques();
-
-        if i % 100 == 0 {
-            println!(
-                "{}",
-                (world.bodies[0].inertia * world.bodies[0].state.angular_velocity).length()
-            );
-        }
-        i = i + 1;
     }
     println!("Finished");
-    println!(
-        "{}",
-        (world.bodies[0].inertia * world.bodies[0].state.angular_velocity).length()
-    );
+    println!("{}", (world.bodies[0].state.velocity).length());
 }
