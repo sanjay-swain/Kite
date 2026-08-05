@@ -1,6 +1,6 @@
 use glam::DQuat;
 
-use crate::{error::PhysicsError, integrator::integrator::Integrator, system::body::Body};
+use crate::{integrator::integrator::Integrator, system::body::Body};
 
 pub struct ExplicitEuler {
     pub step_size: f64,
@@ -27,14 +27,8 @@ impl Integrator for ExplicitEuler {
         }
     }
 
-    fn new(step_size: f64) -> Result<Self, PhysicsError> {
-        if step_size > 0.0 {
-            Ok(Self {
-                step_size: step_size,
-            })
-        } else {
-            Err(PhysicsError::InvalidStepSize(step_size))
-        }
+    fn new(step_size: f64) -> Self {
+        Self { step_size }
     }
 }
 
@@ -61,13 +55,7 @@ impl Integrator for SemiImplicitEuler {
         }
     }
 
-    fn new(step_size: f64) -> Result<Self, PhysicsError> {
-        if step_size > 0.0 {
-            Ok(Self {
-                step_size: step_size,
-            })
-        } else {
-            Err(PhysicsError::InvalidStepSize(step_size))
-        }
+    fn new(step_size: f64) -> Self {
+        Self { step_size }
     }
 }

@@ -14,6 +14,41 @@ use crate::{
     },
 };
 
+pub struct SimTime {
+    /// Absolute time in nanoseconds
+    pub elapsed_nanos: u64,
+    /// The step size in nanoseconds
+    step_nanos: u64,
+}
+
+impl SimTime {
+    pub fn new(hz: u64) -> Result<Self, PhysicsError> {
+        if hz > 0 {
+            Ok(Self {
+                elapsed_nanos: 0,
+                step_nanos: 1_000_000_000 / hz,
+            })
+        } else {
+            Err(PhysicsError::InvalidStepSize(0.0))
+        }
+    }
+
+    /// Advance the simulation
+    pub fn advance(&mut self) {
+        self.elapsed_nanos += self.step_nanos;
+    }
+
+    /// Get the floating-point `dt` in seconds
+    pub fn dt_seconds(&self) -> f64 {
+        self.step_nanos as f64 / 1_000_000_000.0
+    }
+
+    /// Get the total elapsed time in seconds
+    pub fn elapsed_seconds(&self) -> f64 {
+        self.elapsed_nanos as f64 / 1_000_000_000.0
+    }
+}
+
 pub struct World<D, C, I, G>
 where
     D: DynamicSolver,
@@ -29,6 +64,8 @@ where
     pub integrator: I,
     pub gravity_solver: G,
 
+    pub time: SimTime,
+
     next_id: usize,
 }
 
@@ -39,14 +76,23 @@ where
     I: Integrator,
     G: GravitySolver,
 {
-    pub fn new(dynamic_solver: D, constraint_solver: C, integrator: I, gravity: G) -> Self {
+    pub fn new(
+        dynamic_solver: D,
+        constraint_solver: C,
+        integrator: I,
+        gravity: G,
+        time_setup: SimTime,
+    ) -> Self {
         Self {
             bodies: Vec::new(),
             constraints: Vec::new(),
+
             dynamic_solver,
             constraint_solver,
             integrator,
             gravity_solver: gravity,
+
+            time: time_setup,
             next_id: 0,
         }
     }

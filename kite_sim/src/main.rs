@@ -8,7 +8,10 @@ use kite_core::{
         newton_euler::NewtonEuler,
     },
     integrator::{euler::SemiImplicitEuler, integrator::Integrator},
-    system::{state::State, world::World},
+    system::{
+        state::State,
+        world::{SimTime, World},
+    },
 };
 use serde::Serialize;
 use std::error::Error;
@@ -26,16 +29,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Starting");
     let mut wtr = Writer::from_path("orbital_telemetry.csv")?;
     // Simulator Config
-    let dynamic_solver = NewtonEuler {};
-    let constraint_solver = AccelerationConstraint {};
-    let integrator = {
-        let this = SemiImplicitEuler::new(1e-3);
+    let time_setup = {
+        let this = SimTime::new(1000);
         match this {
             Ok(t) => t,
-            Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
+            Err(_) => panic!("The time step can't be zero"),
         }
     };
+    let dynamic_solver = NewtonEuler {};
+    let constraint_solver = AccelerationConstraint {};
     let gravity = BasicEarthGravity {};
+    let integrator = SemiImplicitEuler::new(time_setup.dt_seconds());
 
     // Initialize world
     let mut world: World<
@@ -43,8 +47,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         AccelerationConstraint,
         SemiImplicitEuler,
         BasicEarthGravity,
-    > = World::new(dynamic_solver, constraint_solver, integrator, gravity);
+    > = World::new(
+        dynamic_solver,
+        constraint_solver,
+        integrator,
+        gravity,
+        time_setup,
+    );
 
+    // Setup world
     match world.create_body(
         3.0,
         DMat3::from_diagonal(DVec3::new(1.0, 2.0, 3.0)),
@@ -60,11 +71,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_err) => panic!(),
     };
 
-    let mut t: f64 = 0.0;
-
-    let mut i = 0;
-
-    while t < 86400.0 {
+    while world.time.elapsed_seconds() < 86400.0 {
+        // Resolve the gravity force
         world.gravity_solver.solve(&mut world.bodies);
         // Update the state_derivative of each body
         world.dynamic_solver.solve(&mut world.bodies);
@@ -72,11 +80,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         // increase the time
         world.integrator.step(&mut world.bodies);
 
-        t += world.integrator.step_size;
-
-        if i % 100000 == 0 {
+        // Put data in when 10 second has passed
+        if world.time.elapsed_nanos % 10_000_000_000 == 0 {
             wtr.serialize(Telemetry {
-                time_sec: t,
+                time_sec: world.time.elapsed_seconds(),
                 pos_x: world.bodies[0].state.position.x,
                 pos_y: world.bodies[0].state.position.y,
                 pos_z: world.bodies[0].state.position.z,
@@ -86,9 +93,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // Clear all the forces at the end
         world.clear_forces_and_torques();
-        i = i + 1;
+
+        // Advance the world time
+        world.time.advance();
     }
-    println!("Finished");
     wtr.flush()?;
 
     println!("Telemetry saved successfully.");
