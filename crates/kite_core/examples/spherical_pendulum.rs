@@ -11,7 +11,7 @@ use kite_core::{
         constraints::{joints::JointType, spherical::SphericalJoint},
         interactions::Force,
         state::State,
-        world::World,
+        world::{SimTime, World},
     },
 };
 
@@ -19,13 +19,14 @@ fn main() {
     println!("Starting");
     let force_solver = NewtonEuler {};
     let constraint_solver = AccelerationConstraint {};
-    let integration = {
-        let this = SemiImplicitEuler::new(1e-3);
+    let time_setup = {
+        let this = SimTime::new(1000);
         match this {
             Ok(t) => t,
-            Err(_) => panic!("called `Result::unwrap()` on an `Err` value"),
+            Err(_) => panic!("The time step can't be zero"),
         }
     };
+    let integration = SemiImplicitEuler::new(1e-3);
     let gravity = ConstantGravity {
         field: DVec3 {
             x: 0.0,
@@ -33,7 +34,13 @@ fn main() {
             z: -9.81,
         },
     };
-    let mut world = World::new(force_solver, constraint_solver, integration, gravity);
+    let mut world = World::new(
+        force_solver,
+        constraint_solver,
+        integration,
+        gravity,
+        time_setup,
+    );
 
     let gr = match world.add_ground() {
         Ok(it) => it,
