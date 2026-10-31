@@ -1,7 +1,7 @@
 use glam::{DQuat, DVec3};
 
 /// Specifies the reference frame of a vector
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Frame {
     /// The vector is defined relative to the world's origin
     World,
@@ -15,10 +15,10 @@ pub enum Frame {
 pub struct Force {
     pub vector: DVec3,
     /// The point where force is applied.
-    /// This is ALWAYS with respect to body frame of reference 
+    /// This is ALWAYS with respect to body frame of reference
     /// regardless the frame assigned is Body or World
     pub point: DVec3,
-    /// This defines whether the force is being applied is oriented according to 
+    /// This defines whether the force is being applied is oriented according to
     /// Body frame of reference or World
     pub frame: Frame,
 }
@@ -99,6 +99,7 @@ pub struct Load {
     torque: DVec3,
 }
 
+
 impl Load {
     pub fn force(&self) -> DVec3 { self.force }
     pub fn torque(&self) -> DVec3 { self.torque }
@@ -122,54 +123,292 @@ impl Load {
 
 #[cfg(test)]
 mod tests {
-    use crate::system::loads::{Force, Frame, Torque};
-    use glam::{DQuat, DVec3};
-    use std::f64::consts::PI;
+    use super::*;
+    use glam::EulerRot;
+    use std::f64::consts::FRAC_PI_2;
+
+    const EPS: f64 = 1e-9;
+
+    fn rot_x90() -> DQuat {
+        DQuat::from_axis_angle(DVec3::X, FRAC_PI_2)
+    }
+
+    fn rot_z90() -> DQuat {
+        DQuat::from_axis_angle(DVec3::Z, FRAC_PI_2)
+    }
+
+    /// Orientation with unequal angles on all axes, so swapped axes can't hide.
+    fn rot_general() -> DQuat {
+        DQuat::from_euler(EulerRot::XYZ, 0.3, -0.7, 1.1)
+    }
+
+    fn assert_vec_eq(actual: DVec3, expected: DVec3) {
+        assert!(
+            actual.abs_diff_eq(expected, EPS),
+            "expected {expected:?}, got {actual:?}"
+        );
+    }
+
+    // ---------- Force / Torque frame conversion ----------
 
     #[test]
-    fn identity() {
-        let f = Force::new(DVec3::new(10.0, 20.0, 30.0), DVec3::ZERO, Frame::Body);
-        let tau = Torque::new(DVec3::new(10.0, 20.0, 30.0), Frame::Body);
+    fn identity_orientation_changes_nothing() {
+        let v = DVec3::new(10.0, 20.0, 30.0);
+        let f = Force::new(v, DVec3::ZERO, Frame::Body);
+        let tau = Torque::new(v, Frame::Body);
 
-        let orientation = DQuat::IDENTITY;
-        assert!((f.to_world(orientation).x - f.vector.x).abs() < 1e-6);
-        assert!((f.to_world(orientation).y - f.vector.y).abs() < 1e-6);
-        assert!((f.to_world(orientation).z - f.vector.z).abs() < 1e-6);
-
-        assert!((tau.to_world(orientation).x - tau.torque.x).abs() < 1e-6);
-        assert!((tau.to_world(orientation).y - tau.torque.y).abs() < 1e-6);
-        assert!((tau.to_world(orientation).z - tau.torque.z).abs() < 1e-6);
+        assert_vec_eq(f.to_world(DQuat::IDENTITY), v);
+        assert_vec_eq(tau.to_world(DQuat::IDENTITY), v);
     }
 
     #[test]
-    fn body_to_world() {
-        let f = Force::new(DVec3::new(10.0, 20.0, 30.0), DVec3::ZERO, Frame::Body);
-        let tau = Torque::new(DVec3::new(10.0, 20.0, 30.0), Frame::Body);
+    fn body_to_world_rotates_about_x() {
+        // +90 deg about X sends (x, y, z) -> (x, -z, y)
+        let v = DVec3::new(10.0, 20.0, 30.0);
+        let expected = DVec3::new(10.0, -30.0, 20.0);
 
-        let orientation = DQuat::from_axis_angle(DVec3::X, PI / 2.0);
+        let f = Force::new(v, DVec3::ZERO, Frame::Body);
+        let tau = Torque::new(v, Frame::Body);
 
-        assert!((f.to_world(orientation).x - 10.0).abs() < 1e-6);
-        assert!((f.to_world(orientation).y + 30.0).abs() < 1e-6);
-        assert!((f.to_world(orientation).z - 20.0).abs() < 1e-6);
-
-        assert!((tau.to_world(orientation).x - 10.0).abs() < 1e-6);
-        assert!((tau.to_world(orientation).y + 30.0).abs() < 1e-6);
-        assert!((tau.to_world(orientation).z - 20.0).abs() < 1e-6);
+        assert_vec_eq(f.to_world(rot_x90()), expected);
+        assert_vec_eq(tau.to_world(rot_x90()), expected);
     }
 
     #[test]
-    fn world_to_body() {
-        let f = Force::new(DVec3::new(10.0, -30.0, 20.0), DVec3::ZERO, Frame::World);
-        let tau = Torque::new(DVec3::new(10.0, -30.0, 20.0), Frame::World);
+    fn world_to_body_is_inverse_rotation_about_x() {
+        let v = DVec3::new(10.0, -30.0, 20.0);
+        let expected = DVec3::new(10.0, 20.0, 30.0);
 
-        let orientation = DQuat::from_axis_angle(DVec3::X, PI / 2.0);
+        let f = Force::new(v, DVec3::ZERO, Frame::World);
+        let tau = Torque::new(v, Frame::World);
 
-        assert!((f.to_body(orientation).x - 10.0).abs() < 1e-6);
-        assert!((f.to_body(orientation).y - 20.0).abs() < 1e-6);
-        assert!((f.to_body(orientation).z - 30.0).abs() < 1e-6);
+        assert_vec_eq(f.to_body(rot_x90()), expected);
+        assert_vec_eq(tau.to_body(rot_x90()), expected);
+    }
 
-        assert!((tau.to_body(orientation).x - 10.0).abs() < 1e-6);
-        assert!((tau.to_body(orientation).y - 20.0).abs() < 1e-6);
-        assert!((tau.to_body(orientation).z - 30.0).abs() < 1e-6);
+    #[test]
+    fn world_frame_vector_is_unchanged_by_to_world() {
+        let v = DVec3::new(1.0, 2.0, 3.0);
+        let f = Force::new(v, DVec3::ZERO, Frame::World);
+        let tau = Torque::new(v, Frame::World);
+
+        assert_vec_eq(f.to_world(rot_general()), v);
+        assert_vec_eq(tau.to_world(rot_general()), v);
+    }
+
+    #[test]
+    fn body_frame_vector_is_unchanged_by_to_body() {
+        let v = DVec3::new(1.0, 2.0, 3.0);
+        let f = Force::new(v, DVec3::ZERO, Frame::Body);
+        let tau = Torque::new(v, Frame::Body);
+
+        assert_vec_eq(f.to_body(rot_general()), v);
+        assert_vec_eq(tau.to_body(rot_general()), v);
+    }
+
+    #[test]
+    fn body_to_world_to_body_round_trips() {
+        let v = DVec3::new(1.0, -2.0, 3.5);
+        let q = rot_general();
+
+        // Body-frame vector -> world.
+        let world = Force::new(v, DVec3::ZERO, Frame::Body).to_world(q);
+        // Treat that result as a world-frame vector and bring it back.
+        let back = Force::new(world, DVec3::ZERO, Frame::World).to_body(q);
+        assert_vec_eq(back, v);
+
+        let world_t = Torque::new(v, Frame::Body).to_world(q);
+        let back_t = Torque::new(world_t, Frame::World).to_body(q);
+        assert_vec_eq(back_t, v);
+    }
+
+    #[test]
+    fn rotation_preserves_vector_length() {
+        let v = DVec3::new(3.0, 4.0, 12.0); // length 13
+        let w = Force::new(v, DVec3::ZERO, Frame::Body).to_world(rot_general());
+        assert!((w.length() - 13.0).abs() < EPS);
+    }
+
+    #[test]
+    fn default_load_is_zero() {
+        let load = Load::default();
+        assert_eq!(load.force(), DVec3::ZERO);
+        assert_eq!(load.torque(), DVec3::ZERO);
+    }
+
+    // ---------- Load::add_force ----------
+
+    #[test]
+    fn force_at_center_of_mass_adds_no_torque() {
+        let mut load = Load::default();
+        let f = Force::new(DVec3::new(1.0, 2.0, 3.0), DVec3::ZERO, Frame::World);
+        load.add_force(f, rot_general());
+
+        assert_vec_eq(load.force(), DVec3::new(1.0, 2.0, 3.0));
+        assert_vec_eq(load.torque(), DVec3::ZERO);
+    }
+
+    #[test]
+    fn force_along_lever_arm_adds_no_torque() {
+        // Force parallel to the offset: r x F = 0.
+        let mut load = Load::default();
+        let f = Force::new(
+            DVec3::new(5.0, 0.0, 0.0),
+            DVec3::new(2.0, 0.0, 0.0),
+            Frame::World,
+        );
+        load.add_force(f, DQuat::IDENTITY);
+
+        assert_vec_eq(load.force(), DVec3::new(5.0, 0.0, 0.0));
+        assert_vec_eq(load.torque(), DVec3::ZERO);
+    }
+
+    #[test]
+    fn offset_force_creates_torque_identity_orientation() {
+        // r = (1,0,0), F = (0,1,0)  =>  r x F = (0,0,1)
+        let mut load = Load::default();
+        let f = Force::new(
+            DVec3::new(0.0, 1.0, 0.0),
+            DVec3::new(1.0, 0.0, 0.0),
+            Frame::World,
+        );
+        load.add_force(f, DQuat::IDENTITY);
+
+        assert_vec_eq(load.force(), DVec3::new(0.0, 1.0, 0.0));
+        assert_vec_eq(load.torque(), DVec3::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn lever_arm_rotates_with_body_world_force() {
+        // Body rotated +90 deg about Z: body point (1,0,0) -> world (0,1,0).
+        // World force (1,0,0). r x F = (0,1,0) x (1,0,0) = (0,0,-1).
+        // A wrong rotation direction would give (0,0,+1).
+        let mut load = Load::default();
+        let f = Force::new(
+            DVec3::new(1.0, 0.0, 0.0),
+            DVec3::new(1.0, 0.0, 0.0),
+            Frame::World,
+        );
+        load.add_force(f, rot_z90());
+
+        assert_vec_eq(load.force(), DVec3::new(1.0, 0.0, 0.0));
+        assert_vec_eq(load.torque(), DVec3::new(0.0, 0.0, -1.0));
+    }
+
+    #[test]
+    fn body_fixed_force_gives_same_torque_regardless_of_orientation() {
+        // Force and point both fixed to the body: torque expressed in world
+        // is the body-frame torque rotated. Here body torque is
+        // (1,0,0) x (0,1,0) = (0,0,1), and rotating about Z leaves it alone.
+        let f = Force::new(
+            DVec3::new(0.0, 1.0, 0.0),
+            DVec3::new(1.0, 0.0, 0.0),
+            Frame::Body,
+        );
+
+        let mut a = Load::default();
+        a.add_force(f, DQuat::IDENTITY);
+        assert_vec_eq(a.torque(), DVec3::new(0.0, 0.0, 1.0));
+
+        let mut b = Load::default();
+        b.add_force(f, rot_z90());
+        // World force is (-1,0,0), world lever arm is (0,1,0):
+        // (0,1,0) x (-1,0,0) = (0,0,1)
+        assert_vec_eq(b.force(), DVec3::new(-1.0, 0.0, 0.0));
+        assert_vec_eq(b.torque(), DVec3::new(0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn body_fixed_torque_equals_rotated_body_torque_general_orientation() {
+        // For a fully body-fixed force, world torque must equal
+        // q * (r_body x F_body). Checked at an awkward orientation.
+        let q = rot_general();
+        let r = DVec3::new(0.5, -1.0, 2.0);
+        let force = DVec3::new(3.0, 1.0, -2.0);
+
+        let mut load = Load::default();
+        load.add_force(Force::new(force, r, Frame::Body), q);
+
+        assert_vec_eq(load.torque(), q * r.cross(force));
+        assert_vec_eq(load.force(), q * force);
+    }
+
+    #[test]
+    fn forces_accumulate() {
+        let mut load = Load::default();
+        load.add_force(
+            Force::new(DVec3::new(1.0, 2.0, 3.0), DVec3::ZERO, Frame::World),
+            DQuat::IDENTITY,
+        );
+        load.add_force(
+            Force::new(DVec3::new(4.0, 5.0, 6.0), DVec3::ZERO, Frame::World),
+            DQuat::IDENTITY,
+        );
+
+        assert_vec_eq(load.force(), DVec3::new(5.0, 7.0, 9.0));
+    }
+
+    #[test]
+    fn opposite_forces_at_offsets_form_a_couple() {
+        // Equal and opposite forces: net force 0, net torque nonzero.
+        // +Y at (1,0,0) gives (0,0,1); -Y at (-1,0,0) gives (-1,0,0)x(0,-1,0) = (0,0,1).
+        let mut load = Load::default();
+        load.add_force(
+            Force::new(DVec3::Y, DVec3::X, Frame::World),
+            DQuat::IDENTITY,
+        );
+        load.add_force(
+            Force::new(-DVec3::Y, -DVec3::X, Frame::World),
+            DQuat::IDENTITY,
+        );
+
+        assert_vec_eq(load.force(), DVec3::ZERO);
+        assert_vec_eq(load.torque(), DVec3::new(0.0, 0.0, 2.0));
+    }
+
+    // ---------- Load::add_torque ----------
+
+    #[test]
+    fn pure_torque_does_not_change_force() {
+        let mut load = Load::default();
+        load.add_torque(
+            Torque::new(DVec3::new(1.0, 2.0, 3.0), Frame::World),
+            rot_general(),
+        );
+
+        assert_vec_eq(load.force(), DVec3::ZERO);
+        assert_vec_eq(load.torque(), DVec3::new(1.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn body_frame_torque_is_rotated_to_world() {
+        // +90 deg about Z sends (1,0,0) -> (0,1,0)
+        let mut load = Load::default();
+        load.add_torque(Torque::new(DVec3::X, Frame::Body), rot_z90());
+
+        assert_vec_eq(load.torque(), DVec3::Y);
+    }
+
+    #[test]
+    fn torques_accumulate() {
+        let mut load = Load::default();
+        load.add_torque(Torque::new(DVec3::new(1.0, 0.0, 0.0), Frame::World), DQuat::IDENTITY);
+        load.add_torque(Torque::new(DVec3::new(0.0, 2.0, 0.0), Frame::World), DQuat::IDENTITY);
+
+        assert_vec_eq(load.torque(), DVec3::new(1.0, 2.0, 0.0));
+    }
+
+    #[test]
+    fn force_torque_and_pure_torque_combine() {
+        // Offset force gives (0,0,1); pure torque adds (1,0,0).
+        let mut load = Load::default();
+        load.add_force(
+            Force::new(DVec3::Y, DVec3::X, Frame::World),
+            DQuat::IDENTITY,
+        );
+        load.add_torque(Torque::new(DVec3::X, Frame::World), DQuat::IDENTITY);
+
+        assert_vec_eq(load.force(), DVec3::Y);
+        assert_vec_eq(load.torque(), DVec3::new(1.0, 0.0, 1.0));
     }
 }
