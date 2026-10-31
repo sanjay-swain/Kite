@@ -25,7 +25,7 @@ impl Integrator for ExplicitEuler {
             dt: f64
     ) {
         // Update the state_derivatives
-        dynamics.solve(properties, &states, t, &mut self.state_derivatives);
+        dynamics.derivative(properties, &states, t, &mut self.state_derivatives);
 
         for i in 0..states.len() {
             states[i].position += states[i].velocity * dt;
@@ -68,7 +68,7 @@ impl Integrator for SemiImplicitEuler {
             dt: f64
     ) {
         // Update the state_derivatives
-        dynamics.solve(properties, &states, t, &mut self.state_derivatives);
+        dynamics.derivative(properties, &states, t, &mut self.state_derivatives);
 
         
         for i in 0..states.len() {

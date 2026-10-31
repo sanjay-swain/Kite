@@ -8,11 +8,11 @@ pub mod newton_euler;
 pub mod sources;
 
 pub trait Dynamics {
-    fn solve(&mut self,
-             properties: &Properties,
-             states: &[State],
-             t: f64,
-             state_derivatives: &mut [StateDerivative]
+    fn derivative(&mut self,
+                  properties: &Properties,
+                  states: &[State],
+                  t: f64,
+                  state_derivatives: &mut [StateDerivative]
     );
 }
 

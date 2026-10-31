@@ -28,7 +28,7 @@ impl NewtonEuler {
 }
 
 impl Dynamics for NewtonEuler {
-    fn solve(
+    fn derivative(
         &mut self,
         properties: &Properties,
         states: &[State],
