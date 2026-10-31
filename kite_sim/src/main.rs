@@ -1,104 +1,31 @@
-use csv::Writer;
 use glam::{DMat3, DQuat, DVec3};
-use kite_core::{
-    dynamics::{
-        constraint_solver::AccelerationConstraint,
-        forces::DynamicSolver,
-        gravity::{BasicEarthGravity, GravitySolver},
-        newton_euler::NewtonEuler,
-    },
-    integrator::{euler::SemiImplicitEuler, integrator::Integrator},
-    system::{
-        state::State,
-        world::{SimTime, World},
-    },
-};
-use serde::Serialize;
-use std::error::Error;
+use kite_core::error::PhysicsError;
+use kite_core::system::state::State;
+use kite_core::world::world_builder::{BodyDesc, WorldBuilder};
 
-#[derive(Serialize)]
-struct Telemetry {
-    time_sec: f64,
-    pos_x: f64,
-    pos_y: f64,
-    pos_z: f64,
-    velocity_mag: f64,
-}
+fn main() -> Result<(), PhysicsError> {
+    let mut world_builder = WorldBuilder::new(240)?;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    println!("Starting");
-    let mut wtr = Writer::from_path("orbital_telemetry.csv")?;
-    // Simulator Config
-    let time_setup = {
-        let this = SimTime::new(1000);
-        match this {
-            Ok(t) => t,
-            Err(_) => panic!("The time step can't be zero"),
-        }
-    };
-    let dynamic_solver = NewtonEuler {};
-    let constraint_solver = AccelerationConstraint {};
-    let gravity = BasicEarthGravity {};
-    let integrator = SemiImplicitEuler::new(time_setup.dt_seconds());
-
-    // Initialize world
-    let mut world: World<
-        NewtonEuler,
-        AccelerationConstraint,
-        SemiImplicitEuler,
-        BasicEarthGravity,
-    > = World::new(
-        dynamic_solver,
-        constraint_solver,
-        integrator,
-        gravity,
-        time_setup,
-    );
-
-    // Setup world
-    match world.create_body(
-        3.0,
-        DMat3::from_diagonal(DVec3::new(1.0, 2.0, 3.0)),
-        State {
-            position: DVec3::new(6771000.0, 0.0, 0.0),
-            velocity: DVec3::new(0.0, 7672.6, 0.0),
+    let body1 = world_builder.add_body(BodyDesc {
+        mass: 1.0,
+        inertia: DMat3::IDENTITY,
+        state: State {
+            position: DVec3::ZERO,
+            velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
-            angular_velocity: DVec3::ZERO,
-        },
-        false,
-    ) {
-        Ok(it) => it,
-        Err(_err) => panic!(),
-    };
-
-    while world.time.elapsed_seconds() < 86400.0 {
-        // Resolve the gravity force
-        world.gravity_solver.solve(&mut world.bodies);
-        // Update the state_derivative of each body
-        world.dynamic_solver.solve(&mut world.bodies);
-
-        // increase the time
-        world.integrator.step(&mut world.bodies);
-
-        // Put data in when 10 second has passed
-        if world.time.elapsed_nanos % 10_000_000_000 == 0 {
-            wtr.serialize(Telemetry {
-                time_sec: world.time.elapsed_seconds(),
-                pos_x: world.bodies[0].state.position.x,
-                pos_y: world.bodies[0].state.position.y,
-                pos_z: world.bodies[0].state.position.z,
-                velocity_mag: world.bodies[0].state.velocity.length(),
-            })?;
+            angular_velocity: DVec3::new(1.0, 1.0, 0.0),
         }
+    });
 
-        // Clear all the forces at the end
-        world.clear_forces_and_torques();
+    let mut world = world_builder.build()?;
 
-        // Advance the world time
-        world.time.advance();
+    let max_time = 1.0;
+
+    while world.time.elapsed_seconds() < max_time {
+        world.step();
     }
-    wtr.flush()?;
 
-    println!("Telemetry saved successfully.");
+    println!("Time: {} And state: \n{}", world.time.elapsed_seconds(), world.state(body1));
+
     Ok(())
 }

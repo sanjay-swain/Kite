@@ -1,19 +1,38 @@
 use glam::DQuat;
-
-use crate::{integrator::integrator::Integrator, system::body::Body};
+use crate::dynamics::Dynamics;
+use crate::integrator::Integrator;
+use crate::system::properties::Properties;
+use crate::system::state::{State, StateDerivative};
 
 pub struct ExplicitEuler {
-    pub step_size: f64,
+    state_derivatives: Vec<StateDerivative>
+}
+
+impl ExplicitEuler {
+    pub fn new(n: usize) -> Self {
+        Self {
+            state_derivatives: vec![StateDerivative::ZERO; n],
+        }
+    }
 }
 
 impl Integrator for ExplicitEuler {
-    fn step(&self, bodies: &mut Vec<Body>) {
-        for body in bodies {
-            body.state.position += body.state.velocity * self.step_size;
-            body.state.velocity += body.state_derivative.acceleration * self.step_size;
+    fn step(&mut self,
+            dynamics: &mut Box<dyn Dynamics>,
+            properties: &Properties,
+            states: &mut [State],
+            t: f64,
+            dt: f64
+    ) {
+        // Update the state_derivatives
+        dynamics.solve(properties, &states, t, &mut self.state_derivatives);
 
-            let q = body.state.orientation;
-            let w = body.state.angular_velocity;
+        for i in 0..states.len() {
+            states[i].position += states[i].velocity * dt;
+            states[i].velocity += self.state_derivatives[i].acceleration * dt;
+
+            let q = states[i].orientation;
+            let w = states[i].angular_velocity;
             let dq_dt = DQuat::from_xyzw(
                 0.5 * (w.x * q.x + w.y * q.z - w.z * q.y),
                 0.5 * (-w.x * q.z + w.y * q.w + w.z * q.x),
@@ -21,41 +40,50 @@ impl Integrator for ExplicitEuler {
                 0.5 * (-w.x * q.x - w.y * q.y - w.z * q.z),
             );
 
-            body.state.orientation = (q + dq_dt * self.step_size).normalize();
-            body.state.angular_velocity +=
-                body.state_derivative.angular_acceleration * self.step_size;
+            states[i].orientation = (q + dq_dt * dt).normalize();
+            states[i].angular_velocity +=
+                self.state_derivatives[i].angular_acceleration * dt;
         }
-    }
-
-    fn new(step_size: f64) -> Self {
-        Self { step_size }
     }
 }
 
 pub struct SemiImplicitEuler {
-    pub step_size: f64,
+    state_derivatives: Vec<StateDerivative>
+}
+
+impl SemiImplicitEuler {
+    pub fn new(n: usize) -> Self {
+        Self {
+            state_derivatives: vec![StateDerivative::ZERO; n],
+        }
+    }
 }
 
 impl Integrator for SemiImplicitEuler {
-    fn step(&self, bodies: &mut Vec<Body>) {
-        for body in bodies {
-            body.state.velocity += body.state_derivative.acceleration * self.step_size;
-            body.state.position += body.state.velocity * self.step_size;
+    fn step(&mut self,
+            dynamics: &mut Box<dyn Dynamics>,
+            properties: &Properties,
+            states: &mut [State],
+            t: f64,
+            dt: f64
+    ) {
+        // Update the state_derivatives
+        dynamics.solve(properties, &states, t, &mut self.state_derivatives);
 
-            body.state.angular_velocity +=
-                body.state_derivative.angular_acceleration * self.step_size;
+        
+        for i in 0..states.len() {
+            states[i].velocity += self.state_derivatives[i].acceleration * dt;
+            states[i].position += states[i].velocity * dt;
 
-            let angle = body.state.angular_velocity.length() * self.step_size;
+            states[i].angular_velocity += self.state_derivatives[i].angular_acceleration * dt;
+
+            let angle = states[i].angular_velocity.length() * dt;
             if angle > 1e-6 {
-                let axis = body.state.angular_velocity.normalize();
+                let axis = states[i].angular_velocity.normalize();
                 let dq = DQuat::from_axis_angle(axis, angle);
 
-                body.state.orientation = (body.state.orientation * dq).normalize();
+                states[i].orientation = (states[i].orientation * dq).normalize();
             }
         }
-    }
-
-    fn new(step_size: f64) -> Self {
-        Self { step_size }
     }
 }

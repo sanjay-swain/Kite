@@ -1,5 +1,6 @@
 use glam::{DQuat, DVec3};
 
+#[derive(Clone, Copy)]
 pub struct State {
     pub position: DVec3,
     pub velocity: DVec3,
@@ -16,6 +17,35 @@ impl State {
     };
 }
 
+use std::fmt;
+
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(
+            f,
+            "position:         ({:.6}, {:.6}, {:.6})",
+            self.position.x, self.position.y, self.position.z
+        )?;
+        writeln!(
+            f,
+            "velocity:         ({:.6}, {:.6}, {:.6})",
+            self.velocity.x, self.velocity.y, self.velocity.z
+        )?;
+        writeln!(
+            f,
+            "orientation:      ({:.6}, {:.6}, {:.6}, {:.6})  [x, y, z, w]",
+            self.orientation.x, self.orientation.y, self.orientation.z, self.orientation.w
+        )?;
+        write!(
+            f,
+            "angular velocity: ({:.6}, {:.6}, {:.6})",
+            self.angular_velocity.x, self.angular_velocity.y, self.angular_velocity.z
+        )
+    }
+}
+
+
+#[derive(Clone, Copy)]
 pub struct StateDerivative {
     pub velocity: DVec3,
     pub acceleration: DVec3,

@@ -1,4 +1,3 @@
-pub mod constraint;
 pub mod distance;
 pub mod fixed;
 pub mod joints;

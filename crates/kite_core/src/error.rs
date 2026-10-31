@@ -5,7 +5,8 @@ use std::fmt::{self};
 pub enum PhysicsError {
     InvalidMass(f64),
     InvalidInertia(DMat3),
-    InvalidStepSize(f64),
+    InvalidFrequency(u64),
+    InsufficientData,
 }
 
 impl fmt::Display for PhysicsError {
@@ -19,8 +20,12 @@ impl fmt::Display for PhysicsError {
                 write!(f, "The mass can't be negative or zero")
             }
 
-            PhysicsError::InvalidStepSize(_) => {
-                write!(f, "The integrator step size must be positive")
+            PhysicsError::InvalidFrequency(_) => {
+                write!(f, "The integrator step frequency is too high or 0")
+            }
+            
+            PhysicsError::InsufficientData => {
+                write!(f, "Not enough data")
             }
         }
     }

@@ -1,11 +1,10 @@
-use crate::system::{
-    constraints::{
-        distance::DistanceJoint, fixed::FixedJoint, revolute::RevoluteJoint,
-        spherical::SphericalJoint,
-    },
-    state::State,
-};
+use crate::system::
+state::State;
 
+use crate::constraint::joint_types::{
+    distance::DistanceJoint, fixed::FixedJoint, revolute::RevoluteJoint,
+    spherical::SphericalJoint,
+};
 use enum_dispatch::enum_dispatch;
 use glam::DVec3;
 

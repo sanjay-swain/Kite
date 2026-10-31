@@ -1,9 +1,6 @@
+use crate::constraint::joint_types::joints::{Jacobian, Joint};
+use crate::system::state::State;
 use glam::{DMat3, DQuat, DVec3};
-
-use crate::system::{
-    constraints::joints::{Jacobian, Joint},
-    state::State,
-};
 
 pub struct FixedJoint {
     joint_frame_a: DQuat,

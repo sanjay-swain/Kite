@@ -1,6 +1,6 @@
 use glam::{DQuat, DVec3};
 
-use crate::system::constraints::joints::{Jacobian, JointType};
+use crate::constraint::joint_types::joints::{Jacobian, JointType};
 
 pub struct Constraint {
     pub body_a_index: usize,

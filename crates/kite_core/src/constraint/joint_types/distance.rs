@@ -1,9 +1,7 @@
+use crate::constraint::joint_types::joints::{Jacobian, Joint};
+use crate::system::
+state::State;
 use glam::DVec3;
-
-use crate::system::{
-    constraints::joints::{Jacobian, Joint},
-    state::State,
-};
 
 pub struct DistanceJoint {
     length: f64,
