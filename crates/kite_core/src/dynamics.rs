@@ -1,4 +1,5 @@
 use crate::dynamics::newton_euler::NewtonEuler;
+use crate::dynamics::sources::ForceSource;
 use crate::system::properties::Properties;
 use crate::system::state::{State, StateDerivative};
 
@@ -8,6 +9,8 @@ pub mod newton_euler;
 pub mod sources;
 
 pub trait Dynamics {
+    fn set_force_sources(&mut self, sources: Vec<Box<dyn ForceSource>>);
+
     fn derivative(&mut self,
                   properties: &Properties,
                   states: &[State],

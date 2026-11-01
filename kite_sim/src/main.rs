@@ -1,4 +1,5 @@
 use glam::{DMat3, DQuat, DVec3};
+use kite_core::dynamics::sources::gravity_source::ConstantGravity;
 use kite_core::error::PhysicsError;
 use kite_core::system::state::State;
 use kite_core::world::world_builder::{BodyDesc, WorldBuilder};
@@ -13,9 +14,11 @@ fn main() -> Result<(), PhysicsError> {
             position: DVec3::ZERO,
             velocity: DVec3::ZERO,
             orientation: DQuat::IDENTITY,
-            angular_velocity: DVec3::new(1.0, 1.0, 0.0),
+            angular_velocity: DVec3::ZERO,
         }
     });
+
+    world_builder.add_force_source(Box::new(ConstantGravity::new(DVec3::Z)));
 
     let mut world = world_builder.build()?;
 

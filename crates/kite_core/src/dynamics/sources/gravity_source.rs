@@ -16,13 +16,13 @@ pub struct ConstantGravity {
 }
 
 impl ConstantGravity {
-    fn new(field: DVec3) -> Self {
+    pub fn new(field: DVec3) -> Self {
         ConstantGravity { field }
     }
 }
 
 impl ForceSource for ConstantGravity {
-    fn compute_loads(&self, properties: &Properties, states: &[State], t: f64, loads: &mut [Load]) {
+    fn compute_loads(&self, properties: &Properties, states: &[State], _t: f64, loads: &mut [Load]) {
         for i in 0..states.len() {
             loads[i].add_force(Force {
                 vector: self.field * properties.mass(BodyId::new(i)),
@@ -43,7 +43,7 @@ impl BasicEarthGravity {
 }
 
 impl ForceSource for BasicEarthGravity {
-    fn compute_loads(&self, properties: &Properties, states: &[State], t: f64, loads: &mut [Load]) {
+    fn compute_loads(&self, properties: &Properties, states: &[State], _t: f64, loads: &mut [Load]) {
         for i in 0..states.len() {
             let r = states[i].position.length();
             let constant = -3.986e14 * properties.mass(BodyId::new(i)) / (r * r * r);
