@@ -5,7 +5,6 @@ use crate::constraint::joint_types::{
     distance::DistanceJoint, fixed::FixedJoint, revolute::RevoluteJoint,
     spherical::SphericalJoint,
 };
-use enum_dispatch::enum_dispatch;
 use glam::DVec3;
 
 #[derive(Clone, Copy)]
@@ -27,7 +26,6 @@ impl Jacobian {
     }
 }
 
-#[enum_dispatch]
 pub trait Joint {
     fn restricted_dof(&self) -> usize;
 
@@ -66,7 +64,6 @@ pub trait Joint {
     ) -> [f64; 6];
 }
 
-#[enum_dispatch(Joint)]
 pub enum JointType {
     SphericalJoint,
     DistanceJoint,

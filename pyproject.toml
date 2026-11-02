@@ -1,2 +1,8 @@
-[tool.uv.workspace]
-members = ["crates/kite_python_bindings"]
+[project]
+name = "kite"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "pandas>=3.1.0",
+]

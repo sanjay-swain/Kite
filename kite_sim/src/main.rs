@@ -1,10 +1,13 @@
+pub mod recorder;
+
 use glam::{DMat3, DQuat, DVec3};
 use kite_core::dynamics::sources::gravity_source::ConstantGravity;
 use kite_core::error::PhysicsError;
 use kite_core::system::state::State;
 use kite_core::world::world_builder::{BodyDesc, WorldBuilder};
+use recorder::Recorder;
 
-fn main() -> Result<(), PhysicsError> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut world_builder = WorldBuilder::new(240)?;
 
     let body1 = world_builder.add_body(BodyDesc {
@@ -22,13 +25,16 @@ fn main() -> Result<(), PhysicsError> {
 
     let mut world = world_builder.build()?;
 
-    let max_time = 10.0;
 
-    while world.time.elapsed_seconds() < max_time {
+    let mut rec = Recorder::new("output/run.csv", vec![body1])?;
+    rec.record(0.0, &world)?;                 // initial state
+    for step in 1..=2400 {
         world.step();
+        if step % 4 == 0 {                    // record every 4th step
+            rec.record(world.time.elapsed_seconds(), &world)?;
+        }
     }
-
-    println!("Time: {} And state: \n{}", world.time.elapsed_seconds(), world.state(body1));
+    rec.finish()?;
 
     Ok(())
 }

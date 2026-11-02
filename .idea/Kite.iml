@@ -6,6 +6,8 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/kite_core/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/kite_python_bindings/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/kite_sim/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/output" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
