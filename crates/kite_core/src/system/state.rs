@@ -15,6 +15,10 @@ impl State {
         orientation: DQuat::IDENTITY,
         angular_velocity: DVec3::ZERO,
     };
+
+    pub fn is_valid(&self) -> bool {
+        self.position.is_finite() && self.velocity.is_finite() && self.orientation.is_finite() && self.angular_velocity.is_finite()
+    }
 }
 
 use std::fmt;

@@ -1,8 +1,8 @@
-use crate::constraint::solvers::{ConstraintSolver, ConstraintSolverKind};
+use crate::constraint::solvers::ConstraintSolverKind;
 use crate::dynamics::sources::ForceSource;
-use crate::dynamics::{Dynamics, DynamicsKind};
+use crate::dynamics::DynamicsKind;
 use crate::error::PhysicsError;
-use crate::integrator::{Integrator, IntegratorKind};
+use crate::integrator::IntegratorKind;
 use crate::system::properties::{BodyId, Properties};
 use crate::system::state::State;
 use crate::system::time::SimTime;
@@ -62,9 +62,14 @@ impl WorldBuilder {
         let mut masses: Vec<f64> = Vec::new();
         let mut inertias: Vec<DMat3> = Vec::new();
         for body in self.bodies {
-            states.push(body.state);
-            masses.push(body.mass);
-            inertias.push(body.inertia);
+            if body.state.is_valid() {
+                states.push(body.state);
+                masses.push(body.mass);
+                inertias.push(body.inertia);
+            }
+            else {
+                return Err(PhysicsError::InvalidState)
+            }
         }
 
         let properties = Properties::new(masses, inertias)?;
@@ -90,9 +95,9 @@ impl WorldBuilder {
 
 #[cfg(test)]
 mod tests {
-    use glam::{DQuat, DVec3};
-    use crate::dynamics::sources::gravity_source::ConstantGravity;
     use super::*;
+    use crate::dynamics::sources::gravity_source::ConstantGravity;
+    use glam::{DQuat, DVec3};
 
     const EPS: f64 = 1e-9;
 
@@ -200,8 +205,6 @@ mod tests {
         assert!(matches!(b.build(), Err(PhysicsError::InvalidInertia(_))));
     }
 
-    // Uncomment once build() checks the initial state for NaN.
-    // TODO: is_valid() needs to be implemented in State. To make the below test pass
     #[test]
     fn non_finite_initial_state_is_rejected() {
         let mut b = WorldBuilder::new(60).unwrap();

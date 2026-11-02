@@ -7,6 +7,7 @@ pub enum PhysicsError {
     InvalidInertia(DMat3),
     InvalidFrequency(u64),
     InsufficientData,
+    InvalidState,
 }
 
 impl fmt::Display for PhysicsError {
@@ -26,6 +27,10 @@ impl fmt::Display for PhysicsError {
             
             PhysicsError::InsufficientData => {
                 write!(f, "Not enough data")
+            }
+
+            PhysicsError::InvalidState => {
+                write!(f, "The state of a body is not finite")
             }
         }
     }

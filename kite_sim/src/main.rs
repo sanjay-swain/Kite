@@ -22,7 +22,7 @@ fn main() -> Result<(), PhysicsError> {
 
     let mut world = world_builder.build()?;
 
-    let max_time = 1.0;
+    let max_time = 10.0;
 
     while world.time.elapsed_seconds() < max_time {
         world.step();
