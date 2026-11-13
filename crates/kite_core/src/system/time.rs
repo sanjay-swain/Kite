@@ -35,6 +35,7 @@ impl SimTime {
         self.step_count as f64 / self.hz as f64
     }
 
+    /// Get the current step count
     pub fn step_count(&self) -> u64 {
         self.step_count
     }
