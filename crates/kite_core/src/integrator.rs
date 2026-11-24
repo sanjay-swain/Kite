@@ -8,12 +8,13 @@ use crate::system::state::State;
 pub mod euler;
 
 pub trait Integrator {
-    fn step(&mut self,
-            dynamics: &mut Box<dyn Dynamics>,
-            properties: &Properties,
-            states: &mut [State],
-            t: f64,
-            dt: f64
+    fn step(
+        &mut self,
+        dynamics: &mut Box<dyn Dynamics>,
+        properties: &Properties,
+        states: &mut [State],
+        t: f64,
+        dt: f64,
     );
 }
 

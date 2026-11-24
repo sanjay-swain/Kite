@@ -2,12 +2,9 @@ use crate::{
     dynamics::sources::ForceSource,
     system::{
         loads::{Force, Frame, Load},
-        properties::{
-            BodyId,
-            Properties
-        },
-        state::State
-    }
+        properties::{BodyId, Properties},
+        state::State,
+    },
 };
 use glam::{DQuat, DVec3};
 
@@ -22,14 +19,22 @@ impl ConstantGravity {
 }
 
 impl ForceSource for ConstantGravity {
-    fn compute_loads(&self, properties: &Properties, states: &[State], _t: f64, loads: &mut [Load]) {
+    fn compute_loads(
+        &self,
+        properties: &Properties,
+        states: &[State],
+        _t: f64,
+        loads: &mut [Load],
+    ) {
         for i in 0..states.len() {
-            loads[i].add_force(Force {
-                vector: self.field * properties.mass(BodyId::new(i)),
-                point: DVec3::ZERO,
-                frame: Frame::World,
-            },
-            DQuat::IDENTITY)
+            loads[i].add_force(
+                Force {
+                    vector: self.field * properties.mass(BodyId::new(i)),
+                    point: DVec3::ZERO,
+                    frame: Frame::World,
+                },
+                DQuat::IDENTITY,
+            )
         }
     }
 }
@@ -43,7 +48,13 @@ impl BasicEarthGravity {
 }
 
 impl ForceSource for BasicEarthGravity {
-    fn compute_loads(&self, properties: &Properties, states: &[State], _t: f64, loads: &mut [Load]) {
+    fn compute_loads(
+        &self,
+        properties: &Properties,
+        states: &[State],
+        _t: f64,
+        loads: &mut [Load],
+    ) {
         for i in 0..states.len() {
             let r = states[i].position.length();
             let constant = -3.986e14 * properties.mass(BodyId::new(i)) / (r * r * r);
@@ -52,11 +63,14 @@ impl ForceSource for BasicEarthGravity {
                 constant * states[i].position.y,
                 constant * states[i].position.z,
             );
-            loads[i].add_force(Force {
-                vector: f,
-                point: DVec3::ZERO,
-                frame: Frame::World,
-            }, DQuat::IDENTITY)
+            loads[i].add_force(
+                Force {
+                    vector: f,
+                    point: DVec3::ZERO,
+                    frame: Frame::World,
+                },
+                DQuat::IDENTITY,
+            )
         }
     }
 }

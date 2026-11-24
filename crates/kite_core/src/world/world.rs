@@ -1,20 +1,11 @@
 use crate::{
-    constraint::{
-        constraint::Constraint,
-        solvers::ConstraintSolver,
-    },
+    constraint::{constraint::Constraint, solvers::ConstraintSolver},
     dynamics::Dynamics,
     integrator::Integrator,
-    system::{
-        properties::BodyId,
-        properties::Properties,
-        state::State,
-        time::SimTime
-    },
+    system::{properties::BodyId, properties::Properties, state::State, time::SimTime},
 };
 
-pub struct World
-{
+pub struct World {
     pub time: SimTime,
     states: Vec<State>,
 
@@ -42,7 +33,7 @@ impl World {
         constraints: Vec<Constraint>,
         dynamics: Box<dyn Dynamics>,
         constraint_solver: Box<dyn ConstraintSolver>,
-        integrator: Box<dyn Integrator>
+        integrator: Box<dyn Integrator>,
     ) -> Self {
         Self {
             time,
@@ -59,9 +50,14 @@ impl World {
         let t = self.time.elapsed_seconds();
         let dt = self.time.dt_seconds();
 
-        self.integrator.step(&mut self.dynamics, &self.properties, &mut self.states, t, dt);
+        self.integrator.step(
+            &mut self.dynamics,
+            &self.properties,
+            &mut self.states,
+            t,
+            dt,
+        );
 
         self.time.advance();
     }
 }
-

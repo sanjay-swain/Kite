@@ -1,10 +1,4 @@
-use crate::{
-    system::{
-        loads::Load,
-        properties::Properties,
-        state::State
-    }
-};
+use crate::system::{loads::Load, properties::Properties, state::State};
 
 pub mod gravity_source;
 

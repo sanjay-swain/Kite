@@ -3,8 +3,6 @@ use glam::DVec3;
 use crate::constraint::constraint::Constraint;
 use crate::constraint::solvers::ConstraintSolver;
 
-
-
 pub struct SoftConstraint {
     tau: f64,
     epsilon: f64,

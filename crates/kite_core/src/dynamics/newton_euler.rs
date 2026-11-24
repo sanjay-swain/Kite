@@ -65,15 +65,14 @@ impl Dynamics for NewtonEuler {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dynamics::sources::gravity_source::ConstantGravity;
+    use crate::system::loads::{Force, Frame};
     use glam::{DMat3, DQuat, DVec3};
     use std::cell::Cell;
     use std::rc::Rc;
-    use crate::dynamics::sources::gravity_source::ConstantGravity;
-    use crate::system::loads::{Force, Frame};
 
     const EPS: f64 = 1e-9;
 
@@ -201,9 +200,22 @@ mod tests {
         let mut d = NewtonEuler::new(2);
         d.set_force_sources(vec![Box::new(PushAll(DVec3::new(8.0, 0.0, 0.0)))]);
         let mut out = zero_derivs(2);
-        d.derivative(&props(&[1.0, 4.0]), &[rest_state(), rest_state()], 0.0, &mut out);
-        assert!(out[0].acceleration.abs_diff_eq(DVec3::new(8.0, 0.0, 0.0), EPS));
-        assert!(out[1].acceleration.abs_diff_eq(DVec3::new(2.0, 0.0, 0.0), EPS));
+        d.derivative(
+            &props(&[1.0, 4.0]),
+            &[rest_state(), rest_state()],
+            0.0,
+            &mut out,
+        );
+        assert!(
+            out[0]
+                .acceleration
+                .abs_diff_eq(DVec3::new(8.0, 0.0, 0.0), EPS)
+        );
+        assert!(
+            out[1]
+                .acceleration
+                .abs_diff_eq(DVec3::new(2.0, 0.0, 0.0), EPS)
+        );
     }
 
     #[test]
@@ -212,7 +224,12 @@ mod tests {
         let mut d = NewtonEuler::new(2);
         d.set_force_sources(vec![Box::new(ConstantGravity { field: g })]);
         let mut out = zero_derivs(2);
-        d.derivative(&props(&[1.0, 50.0]), &[rest_state(), rest_state()], 0.0, &mut out);
+        d.derivative(
+            &props(&[1.0, 50.0]),
+            &[rest_state(), rest_state()],
+            0.0,
+            &mut out,
+        );
         assert!(out[0].acceleration.abs_diff_eq(g, EPS));
         assert!(out[1].acceleration.abs_diff_eq(g, EPS));
     }
@@ -243,7 +260,11 @@ mod tests {
 
         d.derivative(&p, &[rest_state()], 0.0, &mut out);
         d.derivative(&p, &[rest_state()], 0.0, &mut out);
-        assert!(out[0].acceleration.abs_diff_eq(DVec3::new(4.0, 0.0, 0.0), EPS));
+        assert!(
+            out[0]
+                .acceleration
+                .abs_diff_eq(DVec3::new(4.0, 0.0, 0.0), EPS)
+        );
     }
 
     #[test]

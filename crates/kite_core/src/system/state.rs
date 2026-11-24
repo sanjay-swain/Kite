@@ -17,7 +17,10 @@ impl State {
     };
 
     pub fn is_valid(&self) -> bool {
-        self.position.is_finite() && self.velocity.is_finite() && self.orientation.is_finite() && self.angular_velocity.is_finite()
+        self.position.is_finite()
+            && self.velocity.is_finite()
+            && self.orientation.is_finite()
+            && self.angular_velocity.is_finite()
     }
 }
 
@@ -47,7 +50,6 @@ impl fmt::Display for State {
         )
     }
 }
-
 
 #[derive(Clone, Copy)]
 pub struct StateDerivative {

@@ -12,11 +12,11 @@ pub trait ConstraintSolver {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum ConstraintSolverKind{
+pub enum ConstraintSolverKind {
     AccelerationConstraint,
     SoftConstraint,
     #[default]
-    NoSolver
+    NoSolver,
 }
 
 impl ConstraintSolverKind {

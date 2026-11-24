@@ -65,10 +65,7 @@ pub struct Torque {
 impl Torque {
     /// Creates a new Torque
     pub fn new(torque: DVec3, frame: Frame) -> Self {
-        Self {
-            torque,
-            frame,
-        }
+        Self { torque, frame }
     }
 
     /// Return the torque vector in world frame of reference
@@ -99,10 +96,13 @@ pub struct Load {
     torque: DVec3,
 }
 
-
 impl Load {
-    pub fn force(&self) -> DVec3 { self.force }
-    pub fn torque(&self) -> DVec3 { self.torque }
+    pub fn force(&self) -> DVec3 {
+        self.force
+    }
+    pub fn torque(&self) -> DVec3 {
+        self.torque
+    }
 
     /// Adds a force (and the torque it creates about the center of mass).
     pub fn add_force(&mut self, f: Force, orientation: DQuat) {
@@ -392,8 +392,14 @@ mod tests {
     #[test]
     fn torques_accumulate() {
         let mut load = Load::default();
-        load.add_torque(Torque::new(DVec3::new(1.0, 0.0, 0.0), Frame::World), DQuat::IDENTITY);
-        load.add_torque(Torque::new(DVec3::new(0.0, 2.0, 0.0), Frame::World), DQuat::IDENTITY);
+        load.add_torque(
+            Torque::new(DVec3::new(1.0, 0.0, 0.0), Frame::World),
+            DQuat::IDENTITY,
+        );
+        load.add_torque(
+            Torque::new(DVec3::new(0.0, 2.0, 0.0), Frame::World),
+            DQuat::IDENTITY,
+        );
 
         assert_vec_eq(load.torque(), DVec3::new(1.0, 2.0, 0.0));
     }

@@ -5,8 +5,8 @@ use glam::DMat3;
 pub struct Properties {
     masses: Vec<f64>,
     masses_inverse: Vec<f64>,
-    inertias: Vec<DMat3>,               // body frame
-    inertias_inverse: Vec<DMat3>,        // body frame
+    inertias: Vec<DMat3>,         // body frame
+    inertias_inverse: Vec<DMat3>, // body frame
 }
 
 impl Properties {
@@ -15,15 +15,15 @@ impl Properties {
         let mut inertias_inverse: Vec<DMat3> = Vec::new();
         // Check if the length match
         if masses.len() != inertias.len() {
-            return Err(PhysicsError::InsufficientData)
+            return Err(PhysicsError::InsufficientData);
         }
 
         // Validate mass > 0
         for mass in &masses {
             if *mass <= 0.0 || !mass.is_finite() {
-                return Err(PhysicsError::InvalidMass(*mass))
+                return Err(PhysicsError::InvalidMass(*mass));
             } else {
-                masses_inverse.push(1.0/mass);
+                masses_inverse.push(1.0 / mass);
             }
         }
 
@@ -33,7 +33,8 @@ impl Properties {
             let diagonal = inertia.diagonal();
             if (diagonal.x <= 0.0 || !diagonal.x.is_finite())
                 || (diagonal.y <= 0.0 || !diagonal.y.is_finite())
-                || (diagonal.z <= 0.0 || !diagonal.z.is_finite()) {
+                || (diagonal.z <= 0.0 || !diagonal.z.is_finite())
+            {
                 return Err(PhysicsError::InvalidInertia(*inertia));
             }
 
@@ -61,33 +62,44 @@ impl Properties {
             masses,
             masses_inverse,
             inertias,
-            inertias_inverse
+            inertias_inverse,
         })
     }
 
     /// Get the mass of a specified body
-    pub fn mass(&self, body_id: BodyId) -> f64 { self.masses[body_id.index()] }
+    pub fn mass(&self, body_id: BodyId) -> f64 {
+        self.masses[body_id.index()]
+    }
     /// Get the mass_inverse of a specified body
-    pub fn mass_inverse(&self, body_id: BodyId) -> f64 { self.masses_inverse[body_id.index()] }
+    pub fn mass_inverse(&self, body_id: BodyId) -> f64 {
+        self.masses_inverse[body_id.index()]
+    }
     /// Get the inertia matrix of a specified body
-    pub fn inertia(&self, body_id: BodyId) -> DMat3 { self.inertias[body_id.index()] }
+    pub fn inertia(&self, body_id: BodyId) -> DMat3 {
+        self.inertias[body_id.index()]
+    }
     /// Get the inertia_inverse matrix of a specified body
-    pub fn inertia_inverse(&self, body_id: BodyId) -> DMat3 { self.inertias_inverse[body_id.index()] }
+    pub fn inertia_inverse(&self, body_id: BodyId) -> DMat3 {
+        self.inertias_inverse[body_id.index()]
+    }
 
-    pub fn len(&self) -> usize { self.masses.len() }
+    pub fn len(&self) -> usize {
+        self.masses.len()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BodyId(usize);
 
 impl BodyId {
-    pub(crate) fn new(id: usize) -> Self { BodyId(id) }
+    pub(crate) fn new(id: usize) -> Self {
+        BodyId(id)
+    }
 
     pub(crate) fn index(&self) -> usize {
         self.0
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -115,7 +127,7 @@ mod tests {
             vec![1.0, 2.0, 4.0],
             vec![diag(1.0, 1.0, 1.0), diag(2.0, 3.0, 4.0), general_inertia()],
         )
-            .unwrap()
+        .unwrap()
     }
 
     // ---------- accessors return the right body ----------
@@ -131,9 +143,18 @@ mod tests {
     #[test]
     fn inertias_are_returned_per_body() {
         let p = three_bodies();
-        assert!(p.inertia(BodyId::new(0)).abs_diff_eq(diag(1.0, 1.0, 1.0), EPS));
-        assert!(p.inertia(BodyId::new(1)).abs_diff_eq(diag(2.0, 3.0, 4.0), EPS));
-        assert!(p.inertia(BodyId::new(2)).abs_diff_eq(general_inertia(), EPS));
+        assert!(
+            p.inertia(BodyId::new(0))
+                .abs_diff_eq(diag(1.0, 1.0, 1.0), EPS)
+        );
+        assert!(
+            p.inertia(BodyId::new(1))
+                .abs_diff_eq(diag(2.0, 3.0, 4.0), EPS)
+        );
+        assert!(
+            p.inertia(BodyId::new(2))
+                .abs_diff_eq(general_inertia(), EPS)
+        );
     }
 
     #[test]

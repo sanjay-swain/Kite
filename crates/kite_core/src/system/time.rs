@@ -11,10 +11,7 @@ pub struct SimTime {
 impl SimTime {
     pub fn new(hz: u64) -> Result<Self, PhysicsError> {
         if hz > 0 {
-            Ok(Self {
-                step_count: 0,
-                hz,
-            })
+            Ok(Self { step_count: 0, hz })
         } else {
             Err(PhysicsError::InvalidFrequency(hz))
         }
@@ -40,7 +37,6 @@ impl SimTime {
         self.step_count
     }
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,6 @@
 use crate::constraint::solvers::ConstraintSolverKind;
-use crate::dynamics::sources::ForceSource;
 use crate::dynamics::DynamicsKind;
+use crate::dynamics::sources::ForceSource;
 use crate::error::PhysicsError;
 use crate::integrator::IntegratorKind;
 use crate::system::properties::{BodyId, Properties};
@@ -11,7 +11,7 @@ use glam::DMat3;
 
 pub struct BodyDesc {
     pub mass: f64,
-    pub inertia: DMat3,      // body frame
+    pub inertia: DMat3, // body frame
     pub state: State,
 }
 
@@ -32,7 +32,7 @@ impl WorldBuilder {
             sources: Vec::new(),
             dynamics: DynamicsKind::NewtonEuler,
             integrator: IntegratorKind::SemiImplicitEuler,
-            constraint_solver: ConstraintSolverKind::NoSolver
+            constraint_solver: ConstraintSolverKind::NoSolver,
         })
     }
 
@@ -66,9 +66,8 @@ impl WorldBuilder {
                 states.push(body.state);
                 masses.push(body.mass);
                 inertias.push(body.inertia);
-            }
-            else {
-                return Err(PhysicsError::InvalidState)
+            } else {
+                return Err(PhysicsError::InvalidState);
             }
         }
 
@@ -87,11 +86,10 @@ impl WorldBuilder {
             Vec::new(),
             dynamics,
             constraint_solver,
-            integrator
+            integrator,
         ))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -217,7 +215,9 @@ mod tests {
     }
 
     #[test]
-    fn empty_world_is_allowed() { assert!(WorldBuilder::new(60).unwrap().build().is_ok()); }
+    fn empty_world_is_allowed() {
+        assert!(WorldBuilder::new(60).unwrap().build().is_ok());
+    }
 
     // ---------- configuration reaches the world ----------
 
@@ -234,8 +234,16 @@ mod tests {
         for _ in 0..10 {
             w.step();
         }
-        assert!(w.state(id).position.abs_diff_eq(DVec3::new(1.0, 2.0, 3.0), 1e-9));
-        assert!(w.state(id).velocity.abs_diff_eq(DVec3::new(1.0, 2.0, 3.0), EPS));
+        assert!(
+            w.state(id)
+                .position
+                .abs_diff_eq(DVec3::new(1.0, 2.0, 3.0), 1e-9)
+        );
+        assert!(
+            w.state(id)
+                .velocity
+                .abs_diff_eq(DVec3::new(1.0, 2.0, 3.0), EPS)
+        );
     }
 
     #[test]
@@ -275,7 +283,11 @@ mod tests {
         b.add_force_source(Box::new(ConstantGravity { field: DVec3::Y }));
         let mut w = b.build().unwrap();
         w.step();
-        assert!(w.state(id).velocity.abs_diff_eq(DVec3::new(0.01, 0.01, 0.0), EPS));
+        assert!(
+            w.state(id)
+                .velocity
+                .abs_diff_eq(DVec3::new(0.01, 0.01, 0.0), EPS)
+        );
     }
 
     // ---------- sizes ----------
@@ -291,7 +303,9 @@ mod tests {
                 state: state_at(DVec3::new(i as f64, 0.0, 0.0), DVec3::Y),
             });
         }
-        b.add_force_source(Box::new(ConstantGravity { field: DVec3::new(0.0, -9.81, 0.0) }));
+        b.add_force_source(Box::new(ConstantGravity {
+            field: DVec3::new(0.0, -9.81, 0.0),
+        }));
         let mut w = b.build().unwrap();
         for _ in 0..200 {
             w.step();

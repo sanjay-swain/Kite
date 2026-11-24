@@ -1,9 +1,7 @@
-use crate::system::
-state::State;
+use crate::system::state::State;
 
 use crate::constraint::joint_types::{
-    distance::DistanceJoint, fixed::FixedJoint, revolute::RevoluteJoint,
-    spherical::SphericalJoint,
+    distance::DistanceJoint, fixed::FixedJoint, revolute::RevoluteJoint, spherical::SphericalJoint,
 };
 use glam::DVec3;
 

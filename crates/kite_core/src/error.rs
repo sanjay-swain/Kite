@@ -24,7 +24,7 @@ impl fmt::Display for PhysicsError {
             PhysicsError::InvalidFrequency(_) => {
                 write!(f, "The integrator step frequency is too high or 0")
             }
-            
+
             PhysicsError::InsufficientData => {
                 write!(f, "Not enough data")
             }

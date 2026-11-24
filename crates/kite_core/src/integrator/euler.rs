@@ -1,11 +1,11 @@
-use glam::DQuat;
 use crate::dynamics::Dynamics;
 use crate::integrator::Integrator;
 use crate::system::properties::Properties;
 use crate::system::state::{State, StateDerivative};
+use glam::DQuat;
 
 pub struct ExplicitEuler {
-    state_derivatives: Vec<StateDerivative>
+    state_derivatives: Vec<StateDerivative>,
 }
 
 impl ExplicitEuler {
@@ -17,12 +17,13 @@ impl ExplicitEuler {
 }
 
 impl Integrator for ExplicitEuler {
-    fn step(&mut self,
-            dynamics: &mut Box<dyn Dynamics>,
-            properties: &Properties,
-            states: &mut [State],
-            t: f64,
-            dt: f64
+    fn step(
+        &mut self,
+        dynamics: &mut Box<dyn Dynamics>,
+        properties: &Properties,
+        states: &mut [State],
+        t: f64,
+        dt: f64,
     ) {
         // Update the state_derivatives
         dynamics.derivative(properties, &states, t, &mut self.state_derivatives);
@@ -41,14 +42,13 @@ impl Integrator for ExplicitEuler {
             );
 
             states[i].orientation = (q + dq_dt * dt).normalize();
-            states[i].angular_velocity +=
-                self.state_derivatives[i].angular_acceleration * dt;
+            states[i].angular_velocity += self.state_derivatives[i].angular_acceleration * dt;
         }
     }
 }
 
 pub struct SemiImplicitEuler {
-    state_derivatives: Vec<StateDerivative>
+    state_derivatives: Vec<StateDerivative>,
 }
 
 impl SemiImplicitEuler {
@@ -60,17 +60,17 @@ impl SemiImplicitEuler {
 }
 
 impl Integrator for SemiImplicitEuler {
-    fn step(&mut self,
-            dynamics: &mut Box<dyn Dynamics>,
-            properties: &Properties,
-            states: &mut [State],
-            t: f64,
-            dt: f64
+    fn step(
+        &mut self,
+        dynamics: &mut Box<dyn Dynamics>,
+        properties: &Properties,
+        states: &mut [State],
+        t: f64,
+        dt: f64,
     ) {
         // Update the state_derivatives
         dynamics.derivative(properties, &states, t, &mut self.state_derivatives);
 
-        
         for i in 0..states.len() {
             states[i].velocity += self.state_derivatives[i].acceleration * dt;
             states[i].position += states[i].velocity * dt;
